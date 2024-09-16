@@ -13,6 +13,15 @@ And install the necessary libraries:
 ```
 pip install -r requirements.txt
 ```
+### For Pronto:
+
+```bash
+cd Path/to/project
+mkdir PerfOpt
+git clone https://github.com/arushisharma17/hpc-code-rag-bench
+cd hpc-code-rag-bench
+sbatch setup.sh Path/to/project/PerfOpt #/work/LAS/jannesar-lab/arushi/PerfOpt
+```
 
 ## Organization
 - [Retrieval](retrieval/): Code to run retrieval, with BM25, dense retrievers via [sentence-transformers](https://www.sbert.net/), and proprietary API embeddings.
