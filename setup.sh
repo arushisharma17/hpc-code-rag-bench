@@ -35,7 +35,7 @@ cd hpc-code-rag-bench
 echo "setting up crag" 
 
 eval "$(micromamba shell hook --shell=bash)"
-#micromamba env create -n crag python=3.10 -c conda-forge -y
+micromamba env create -n crag python=3.10 -c conda-forge -y
 micromamba activate crag
 
 echo "crag created"

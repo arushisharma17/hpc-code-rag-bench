@@ -155,7 +155,8 @@ def main():
                 id_key = "problem_id"
             all_top_docs = []
             for task_id in ds["test"][id_key]:
-                all_top_docs.append(get_top_docs(f"{task_id}_doc"))
+                all_top_docs.append(get_top_docs(results, corpus, task_id))
+                #all_top_docs.append(get_top_docs(f"{task_id}_doc"))
             ds["test"] = ds["test"].add_column("docs", all_top_docs)
             ds["test"].to_json(args.results_file)  # this outputs to arrow format and read as .jsonl
         elif args.dataset.startswith("odex"):
