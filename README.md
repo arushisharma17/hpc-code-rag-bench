@@ -20,17 +20,11 @@ sbatch setup.sh Path/to/project/PerfOpt #/work/LAS/jannesar-lab/arushi/PerfOpt
 ## Retrieval For Pronto
 
 ```
-cd retrieval/
+sbatch retrieval.sh Path/to/project/PerfOpt #/work/LAS/jannesar-lab/arushi/PerfOpt
+
 ```
-### Dataset Preprocessing
-Before running retrieval on a dataset, you need to create the datastore for it. Following
-```
-python -m create/${data_name}.py
-# choices for ${data_name}
-# basic programming: 'humaneval', 'mbpp', 'live_code_bench'
-# open-domain: 'ds1000', 'odex'
-# repository-level: 'repoeval_repo', 'swebench_repo'
-```
+
+
 
 #### Adding new datasets
 To run a new dataset, you can simply reformat your data into the BEIR official format, which creates a dataset directory containing the three following files, `corpus.jsonl`, `queries.jsonl` and `qrel/test.tsv`.
