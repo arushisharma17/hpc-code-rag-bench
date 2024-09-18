@@ -2,18 +2,7 @@
 
 This is the code repository for the project ["CodeRAG-Bench: Can Retrieval Augment Code Generation?"](https://code-rag-bench.github.io/).
 
-## Installation
-
-Create a new environment:
-```
-conda env create -n crag python=3.10 -y
-conda activate crag
-```
-And install the necessary libraries:
-```
-pip install -r requirements.txt
-```
-### For Pronto:
+## Installation For Pronto:
 
 ```bash
 cd Path/to/project
@@ -28,7 +17,7 @@ sbatch setup.sh Path/to/project/PerfOpt #/work/LAS/jannesar-lab/arushi/PerfOpt
 - [Generation](generation/): Code to run model generation and execution-based evaluation.
 - [Preprocess](preprocessor/): code to preprocess raw data for retrieval pool construction, see inside the directory for details.
 
-## Retrieval
+## Retrieval For Pronto
 
 ```
 cd retrieval/
