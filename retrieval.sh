@@ -39,7 +39,8 @@ micromamba activate crag
 if [ $? -eq 0 ]; then
     echo "Environment 'crag' activated successfully."
 
-    # Step 1: Run the dataset preprocessing for HumanEval - run this only once
+    # Step 1: Run the dataset preprocessing for HumanEval: Before running retrieval on a dataset, you need to create the datastore for it.
+    # Run this only once
     python -m create.humaneval
     
     # Check if preprocessing was successful
