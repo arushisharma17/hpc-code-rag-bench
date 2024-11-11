@@ -1,0 +1,18 @@
+Prompt,Response,Correct Answer,Similarity,Is Correct
+"You are an openmp performance optimization expert. Provide complete, syntactically and semantically correct answers to performance optimization questions based on the given code samples.  
+ Question: Write a python function to remove first and last occurrence of a given character from the string.",    return s,"def remove_Occ(s,ch): 
+    for i in range(len(s)): 
+        if (s[i] == ch): 
+            s = s[0 : i] + s[i + 1:] 
+            break
+    for i in range(len(s) - 1,-1,-1):  
+        if (s[i] == ch): 
+            s = s[0 : i] + s[i + 1:] 
+            break
+    return s ",0.23972171545028687,False
+"You are an openmp performance optimization expert. Provide complete, syntactically and semantically correct answers to performance optimization questions based on the given code samples.  
+ Question: Write a function to sort a given matrix in ascending order according to the sum of its rows.",},"def sort_matrix(M):
+    result = sorted(M, key=sum)
+    return result",0.04309994727373123,False
+
+Overall Accuracy,0.0

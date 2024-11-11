@@ -24,6 +24,15 @@ sbatch retrieval.sh Path/to/project/PerfOpt #/work/LAS/jannesar-lab/arushi/PerfO
 
 ```
 
+#### Datastore Creation
+There are some existing functions to create datastores with located in /retrieval/create named "mcqa.py", "open_ended.py" and "rodinia.py".
+
+By default, running these will create files under /retrieval/dataset/datastore/*
+
+This process creates both query.json and corpus.json based on the function.
+
+To limit this to only corpus or query, add argument "--cor" with parameters {corpus, query, both}
+ie. "py {file}.py --cor corpus"
 
 
 #### Adding new datasets

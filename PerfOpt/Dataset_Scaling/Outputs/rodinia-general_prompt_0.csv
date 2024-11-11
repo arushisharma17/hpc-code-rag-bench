@@ -1,0 +1,112 @@
+prompt,response
+"Generate 10 OpenMP performance optimization multiple choice questions. The generated questions should be in the form of a list of json objects containing the following fields: Question: <generated question>, Options: <Four options A, B, C, and D with one correct answer>, Answer: Correct answer to the generated question 'A', 'B', 'C', or 'D'.","[
+{
+""Question"": ""Which OpenMP clause is used to define private variables?"",
+""Options"": {
+""A"": ""#pragma omp private"",
+""B"": ""#pragma omp for"",
+""C"": ""#pragma omp parallel private"",
+""D"": ""#pragma omp shared""
+},
+""Answer"": ""C""
+},
+
+{
+""Question"": ""What does the OpenMP 'collapse' clause do?"",
+""Options"": {
+""A"": ""It collapses parallel region into single execution thread"",
+""B"": ""It utilizes multiple iterations of loop into single iteration group"",
+""C"": ""It combines multiple sequential threads into one thread"",
+""D"": ""It collapses multiple variables into a single variable""
+},
+""Answer"": ""B""
+},
+
+{
+""Question"": ""What is the benefit of using the 'nowait' clause in OpenMP?"",
+""Options"": {
+""A"": ""It allows the system to assign tasks to idle threads"",
+""B"": ""It allows threads to move on without waiting for others at the end of parallel region"",
+""C"": ""It improves memory utilization"",
+""D"": ""It enables the use of SIMD instructions""
+},
+""Answer"": ""B""
+},
+
+{
+""Question"": ""Which solution is useful for false sharing problem in OpenMP?"",
+""Options"": {
+""A"": ""Using thread private variables"",
+""B"": ""Increasing the number of threads"",
+""C"": ""Using atomic operations"",
+""D"": ""Restructuring the computation""
+},
+""Answer"": ""A""
+},
+
+{
+""Question"": ""What's the effect of the OpenMP 'atomic' directive?"",
+""Options"": {
+""A"": ""It ensures that a specific variable is shared among all threads"",
+""B"": ""It ensures that a particular section of code is executed by a single thread at a time"",
+""C"": ""It ensures a specific operation of read-modify-write is done atomically without being interrupted"",
+""D"": ""It breaks down a task into multiple sub-tasks to be processed in parallel""
+},
+""Answer"": ""C""
+},
+
+{
+""Question"": ""Which OpenMP directive is used to parallelize a for loop?"",
+""Options"": {
+""A"": ""#pragma omp parallel"",
+""B"": ""#pragma omp for"",
+""C"": ""#pragma omp section"",
+""D"": ""#pragma omp master""
+},
+""Answer"": ""B""
+},
+
+{
+""Question"": ""In OpenMP, what is the purpose of '#pragma omp master'?"",
+""Options"": {
+""A"": ""It restricts execution of the following structured block to the master thread only"",
+""B"": ""It parallels the execution of the following structured block"",
+""C"": ""It ensures the synchronization of all threads"",
+""D"": ""It avoids race condition""
+},
+""Answer"": ""A""
+},
+
+{
+""Question"": ""What's the purpose of using the 'schedule' clause in OpenMP?"",
+""Options"": {
+""A"": ""To specify how loop iterations are divided among threads"",
+""B"": ""To synchronize threads"",
+""C"": ""To merge multiple threads into one"",
+""D"": ""To specify the maximum number of threads in a team""
+},
+""Answer"": ""A""
+},
+
+{
+""Question"": ""What does the 'threadprivate' directive do in OpenMP?"",
+""Options"": {
+""A"": ""It makes global variables private to each thread"",
+""B"": ""It specifies the maximum number of threads that should be used"",
+""C"": ""It synchronizes all threads"",
+""D"": ""It distributes loop iterations among threads""
+},
+""Answer"": ""A""
+},
+
+{
+""Question"": ""What is the role of the 'reduction' clause in OpenMP?"",
+""Options"": {
+""A"": ""To consolidate the size of the code"",
+""B"": ""To perform parallel reduction operations like summation or finding max/min"",
+""C"": ""To reduce the number of threads used by the program"",
+""D"": ""To reduce the memory used by the program""
+},
+""Answer"": ""B""
+}
+]"

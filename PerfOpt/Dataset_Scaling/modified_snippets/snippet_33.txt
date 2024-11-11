@@ -1,0 +1,1 @@
+\n#include <stdio.h>\n#include <stdlib.h>\n#include "backprop.h"\n\nextern layer_size;\n\nload(net)\nBPNN *net;\n{\n  float *units;\n  int nr, nc, imgsize, i, j, k;\n\n  nr = layer_size;\n  \n  imgsize = nr * nc;\n  units = net->input_units;\n\n  k = 1;\n  for (i = 0; i < nr; i++) {\n	  units[k] = (float) rand()/RAND_MAX ;\n	  k++;\n    }\n}\n

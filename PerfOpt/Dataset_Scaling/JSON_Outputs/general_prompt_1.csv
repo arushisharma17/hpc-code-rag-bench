@@ -1,0 +1,425 @@
+prompt,response
+"Generate JSON of 50 multiple choice questions about advanced OpenMP performance optimization concepts. Each question must be a json object with keys: Question: <generated question>, Options: <Four options A, B, C, and D with one correct answer>, Answer: Correct answer to the generated question 'A', 'B', 'C', or 'D'.","{
+    ""questions"": [
+        {
+            ""Question"": ""What can cause false sharing in an OpenMP parallel program?"",
+            ""Options"": {
+                ""A"": ""Using dynamic scheduling"",
+                ""B"": ""Variables located close together in memory accessed by different threads"",
+                ""C"": ""Utilization of atomic operations"",
+                ""D"": ""Incorrect use of reduction clause""
+            },
+            ""Answer"": ""B""
+        },
+        {
+            ""Question"": ""What is the purpose of the 'collapse' clause in OpenMP?"",
+            ""Options"": {
+                ""A"": ""To merge adjacent parallel regions"",
+                ""B"": ""To reduce the overhead of nested loops"",
+                ""C"": ""To prevent deadlock situations"",
+                ""D"": ""To share work among threads more evenly""
+            },
+            ""Answer"": ""B""
+        },
+        {
+            ""Question"": ""Which clause should be used to manually specify the chunk size for a loop iteration in OpenMP?"",
+            ""Options"": {
+                ""A"": ""schedule(static, chunk_size)"",
+                ""B"": ""ordered(chunk_size)"",
+                ""C"": ""private(chunk_size)"",
+                ""D"": ""nowait""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""In OpenMP, what does the 'ordered' clause do?"",
+            ""Options"": {
+                ""A"": ""It enforces a specific execution order for critical sections"",
+                ""B"": ""It specifies that loop iterations are executed in the order of the loop indices"",
+                ""C"": ""It allows to execute loop iterations in any order, but processes their results in the original order"",
+                ""D"": ""It creates an ordered queue for threads to execute""
+            },
+            ""Answer"": ""C""
+        },
+        {
+            ""Question"": ""The 'schedule(runtime)' clause in OpenMP is used for what purpose?"",
+            ""Options"": {
+                ""A"": ""To let the runtime system choose the schedule"",
+                ""B"": ""To use the schedule specified at compile time"",
+                ""C"": ""To ensure a runtime error if the scheduling is incorrect"",
+                ""D"": ""To specify scheduling during runtime via environment variables""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""What does the 'firstprivate' clause in OpenMP do?"",
+            ""Options"": {
+                ""A"": ""It initializes the private copy of a variable for each thread with the value of the variable before the parallel region"",
+                ""B"": ""It gives the first thread an initial value for a private variable"",
+                ""C"": ""It ensures the variable is private and first accessed by only one thread"",
+                ""D"": ""It marks the first occurrence of a variable as private within a parallel region""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""What is the effect of 'nowait' clause in OpenMP loop constructs?"",
+            ""Options"": {
+                ""A"": ""It eliminates the implicit barrier at the end of a loop"",
+                ""B"": ""It cancels the execution of the remainder of the loop"",
+                ""C"": ""It waits for all threads to reach the specified point"",
+                ""D"": ""It skips the scheduling of loop iterations""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""When optimizing OpenMP programs, which of the following is NOT a data environment directive?"",
+            ""Options"": {
+                ""A"": ""shared"",
+                ""B"": ""default"",
+                ""C"": ""copyin"",
+                ""D"": ""parallel""
+            },
+            ""Answer"": ""D""
+        },
+        {
+            ""Question"": ""Which of the following describes the purpose of 'taskyield' in OpenMP?"",
+            ""Options"": {
+                ""A"": ""It increases the priority of a task"",
+                ""B"": ""It suspends the current task in favor of executing another available task"",
+                ""C"": ""It yields the remainder of the time slice to the operating system"",
+                ""D"": ""It forces a task to complete before continuing""
+            },
+            ""Answer"": ""B""
+        },
+        {
+            ""Question"": ""In OpenMP, which clause should be used for enabling the use of thread-local storage for a variable?"",
+            ""Options"": {
+                ""A"": ""shared"",
+                ""B"": ""firstprivate"",
+                ""C"": ""threadprivate"",
+                ""D"": ""private""
+            },
+            ""Answer"": ""C""
+        },
+        {
+            ""Question"": ""What is the purpose of the 'proc_bind' clause in OpenMP?"",
+            ""Options"": {
+                ""A"": ""It ensures that all array processing binds to single thread"",
+                ""B"": ""It directs the runtime to bind threads to processors according to a specified policy"",
+                ""C"": ""It binds the procedure to a parallel region"",
+                ""D"": ""It provides a dynamic binding of tasks to threads""
+            },
+            ""Answer"": ""B""
+        },
+        {
+            ""Question"": ""Which OpenMP environment variable is used to set the default number of threads for parallel regions?"",
+            ""Options"": {
+                ""A"": ""OMP_NUM_THREADS"",
+                ""B"": ""OMP_DYNAMIC"",
+                ""C"": ""OMP_SCHEDULE"",
+                ""D"": ""OMP_PROC_BIND""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""In OpenMP, which of the following can help to avoid contention while accessing a contended lock too often?"",
+            ""Options"": {
+                ""A"": ""Replacing critical sections with atomic operations"",
+                ""B"": ""Using default(none) to specify variable scopes explicitly"",
+                ""C"": ""Implementing nested parallelism"",
+                ""D"": ""Setting thread affinity with OMP_PROC_BIND""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""Why is loop unrolling used in OpenMP?"",
+            ""Options"": {
+                ""A"": ""To decrease the size of the binary file"",
+                ""B"": ""To reduce the total number of iterations of the loop"",
+                ""C"": ""To increase the decomposition granularity and improve cache utilization"",
+                ""D"": ""To allow automatic parallelization of the loop""
+            },
+            ""Answer"": ""C""
+        },
+        {
+            ""Question"": ""What is a potential downside of setting the 'OMP_DYNAMIC' environment variable to 'TRUE'?"",
+            ""Options"": {
+                ""A"": ""Threads may be underutilized if dynamic adjustment of the number of threads leads to less threads than available cores"",
+                ""B"": ""It might disable all parallelism in the program"",
+                ""C"": ""It can cause deadlocks if not handled correctly"",
+                ""D"": ""It explicitly disables dynamic teams""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""What is the function of the 'num_threads' clause in OpenMP?"",
+            ""Options"": {
+                ""A"": ""It sets the upper limit of threads to be used in nested parallel regions"",
+                ""B"": ""It specifies the number of threads to be used in a parallel region"",
+                ""C"": ""It allows threads to be dynamically renumbered"",
+                ""D"": ""It limits the number of threads to the number of available processors""
+            },
+            ""Answer"": ""B""
+        },
+        {
+            ""Question"": ""Which of the following clauses is important for memory affinity in OpenMP?"",
+            ""Options"": {
+                ""A"": ""shared"",
+                ""B"": ""copyprivate"",
+                ""C"": ""affinity"",
+                ""D"": ""single""
+            },
+            ""Answer"": ""C""
+        },
+        {
+            ""Question"": ""How does the 'OMP_WAIT_POLICY' environment variable affect OpenMP performance?"",
+            ""Options"": {
+                ""A"": ""It influences whether threads spin-wait or sleep when waiting for work"",
+                ""B"": ""It informs the runtime whether to wait for a set amount of time before starting new threads"",
+                ""C"": ""It affects how long threads will wait before synchronizing with each other"",
+                ""D"": ""It imposes a maximum wait time for task completion""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""What is the best use case for the 'critical' directive in OpenMP?"",
+            ""Options"": {
+                ""A"": ""To protect small sections of code that must be executed by only one thread at a time"",
+                ""B"": ""For high-frequency lock acquisitions"",
+                ""C"": ""To handle exceptions in parallel regions"",
+                ""D"": ""To define a section of code that should not be optimized by the compiler""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""Why should OpenMP 'barriers' be used sparingly for performance optimization?"",
+            ""Options"": {
+                ""A"": ""They cause the program to wait until all threads reach the same point, potentially causing idle time"",
+                ""B"": ""They increase the overhead due to context switching"",
+                ""C"": ""They are not supported in newer versions of OpenMP"",
+                ""D"": ""They limit the maximum number of threads that can be utilized""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""Which OpenMP scheduling policy is likely to be the most beneficial when loop iterations have unpredictable execution times?"",
+            ""Options"": {
+                ""A"": ""Static scheduling"",
+                ""B"": ""Dynamic scheduling"",
+                ""C"": ""Guided scheduling"",
+                ""D"": ""Runtime scheduling""
+            },
+            ""Answer"": ""B""
+        },
+        {
+            ""Question"": ""In OpenMP, how can you ensure that a loop counter is private to each thread to minimize synchronization overhead?"",
+            ""Options"": {
+                ""A"": ""Declare the loop counter as a global variable"",
+                ""B"": ""Use the 'private' clause when declaring the parallel loop"",
+                ""C"": ""Use atomic operations on the loop counter"",
+                ""D"": ""Place a barrier after each iteration""
+            },
+            ""Answer"": ""B""
+        },
+        {
+            ""Question"": ""What does 'thread affinity' in OpenMP refer to?"",
+            ""Options"": {
+                ""A"": ""The ability of threads to execute any task without restriction"",
+                ""B"": ""The preference of a thread to run on a specific processor"",
+                ""C"": ""The relationship between threads that allows them to synchronize"",
+                ""D"": ""The capability of threads to be bound together in a team""
+            },
+            ""Answer"": ""B""
+        },
+        {
+            ""Question"": ""Why might you use 'lastprivate' instead of 'private' in an OpenMP loop construct?"",
+            ""Options"": {
+                ""A"": ""When you want to copy the value of the last iteration of the loop back to the original variable"",
+                ""B"": ""To share a variable between threads while making the last thread to finish update the value"",
+                ""C"": ""To guarantee that the variable retains its value from the last iteration of the loop"",
+                ""D"": ""To define a variable as private only to the last thread""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""What is the significance of 'flush' in OpenMP?"",
+            ""Options"": {
+                ""A"": ""It releases all dynamic memory used by the OpenMP runtime"",
+                ""B"": ""It forces the thread to discard its temporary view of memory and re-read shared variables"",
+                ""C"": ""It is used to enforce mutual exclusion for critical sections"",
+                ""D"": ""It initiates a global memory cleanup to reduce fragmentation""
+            },
+            ""Answer"": ""B""
+        },
+        {
+            ""Question"": ""Which cache optimization technique is preferable for multi-dimensional array traversal in OpenMP?"",
+            ""Options"": {
+                ""A"": ""Loop tiling"",
+                ""B"": ""Loop interchange"",
+                ""C"": ""Loop fusion"",
+                ""D"": ""Loop splitting""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""What is the intended use of the 'OMP_MAX_ACTIVE_LEVELS' environment variable?"",
+            ""Options"": {
+                ""A"": ""It limits the maximum number of nested parallel regions"",
+                ""B"": ""It sets the maximum number of threads per process"",
+                ""C"": ""It specifies the maximum number of nested 'single' constructs"",
+                ""D"": ""It controls the maximum number of active barriers""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""What advantage does the 'guided' scheduling policy offer in OpenMP?"",
+            ""Options"": {
+                ""A"": ""Provides better load balancing by decreasing chunk sizes over time"",
+                ""B"": ""Guarantees that all threads run exactly the same number of loop iterations"",
+                ""C"": ""Ensures that all loop iterations are assigned at compile time"",
+                ""D"": ""Decreases overhead by statically assigning all chunks""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""What does the OpenMP 'copyprivate' clause do?"",
+            ""Options"": {
+                ""A"": ""It defines a shared variable that is copied from one thread's private storage to all other threads"",
+                ""B"": ""It is used to duplicate a value across all threads when exiting a 'single' or 'master' region"",
+                ""C"": ""It specifies that a private variable should be initialized with the value held by the master thread"",
+                ""D"": ""It creates a private copy of a variable for every thread""
+            },
+            ""Answer"": ""B""
+        },
+        {
+            ""Question"": ""Why might you opt to compile OpenMP with SIMD (Single Instruction, Multiple Data) instructions enabled?"",
+            ""Options"": {
+                ""A"": ""To enable task parallelism within a single thread"",
+                ""B"": ""To provide sequential consistency for variable accesses"",
+                ""C"": ""To take advantage of vector units in processors and speed up operations on arrays"",
+                ""D"": ""To improve exception handling in parallel regions""
+            },
+            ""Answer"": ""C""
+        },
+        {
+            ""Question"": ""What is the main purpose of the 'single' construct in OpenMP?"",
+            ""Options"": {
+                ""A"": ""To specify that a section of code should be executed by only one thread at a time"",
+                ""B"": ""To execute the section of code only one time, by the first thread to encounter it"",
+                ""C"": ""To ensure that a single thread executes the entire OpenMP program"",
+                ""D"": ""To limit the parallel region to use only one thread""
+            },
+            ""Answer"": ""B""
+        },
+        {
+            ""Question"": ""How does the 'OMP_NESTED' environment variable affect threading in OpenMP?"",
+            ""Options"": {
+                ""A"": ""It enables or disables the nesting of parallel regions"",
+                ""B"": ""It forces threads to execute in a pre-determined nesting order"",
+                ""C"": ""It categorizes nested loops for optimization"",
+                ""D"": ""It creates a new thread team for every nested parallel region""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""If a program using OpenMP is not scaling as expected with increased thread count, which of the following could be a potential reason?"",
+            ""Options"": {
+                ""A"": ""The algorithm may not be sufficiently parallelizable"",
+                ""B"": ""OpenMP might not be installed properly"",
+                ""C"": ""The CPU is too powerful for OpenMP to handle"",
+                ""D"": ""There are not enough variables declared as 'private'""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""What is the effect of setting 'OMP_PROC_BIND=true'?"",
+            ""Options"": {
+                ""A"": ""It prevents thread migration by binding threads to processors"",
+                ""B"": ""It allows the OpenMP runtime to dynamically bind threads to processors"",
+                ""C"": ""It will prioritize processor binding over thread creation"",
+                ""D"": ""It deactivates all processor bindings and lets the operating system decide""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""Which clause in OpenMP can help reduce the overhead of frequent memory allocation and deallocation within a parallel loop?"",
+            ""Options"": {
+                ""A"": ""shared"",
+                ""B"": ""private"",
+                ""C"": ""firstprivate"",
+                ""D"": ""lastprivate""
+            },
+            ""Answer"": ""B""
+        },
+        {
+            ""Question"": ""When using nested parallelism in OpenMP, what determines the number of threads spawned in the inner parallel regions?"",
+            ""Options"": {
+                ""A"": ""The maximum number of threads available on the system"",
+                ""B"": ""The 'OMP_NUM_THREADS' environment variable at the outer level"",
+                ""C"": ""The dynamic thread adjustment setting"",
+                ""D"": ""The 'num_threads' clause specified at the inner parallel region""
+            },
+            ""Answer"": ""D""
+        },
+        {
+            ""Question"": ""In an OpenMP parallel region, which scheduling policy could potentially result in load imbalance?"",
+            ""Options"": {
+                ""A"": ""Static scheduling"",
+                ""B"": ""Dynamic scheduling"",
+                ""C"": ""Guided scheduling"",
+                ""D"": ""Auto scheduling""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""Which strategy can be useful for improving OpenMP performance when working with large arrays?"",
+            ""Options"": {
+                ""A"": ""Using large chunk sizes in loop scheduling"",
+                ""B"": ""Applying the 'single' directive to array operations"",
+                ""C"": ""Employing array padding to avoid false sharing"",
+                ""D"": ""Marking arrays as 'threadprivate'""
+            },
+            ""Answer"": ""C""
+        },
+        {
+            ""Question"": ""Why would you use the 'omp_get_wtime()' function in OpenMP?"",
+            ""Options"": {
+                ""A"": ""To measure the wall-clock time elapsed during the execution of a parallel region"",
+                ""B"": ""To synchronize the start time of all threads"",
+                ""C"": ""To enforce a time-based barrier among threads"",
+                ""D"": ""To set a time limit on loop execution""
+            },
+            ""Answer"": ""A""
+        },
+        {
+            ""Question"": ""What does 'nesting' mean in the context of OpenMP parallel regions?"",
+            ""Options"": {
+                ""A"": ""Creating hierarchical divisions of tasks that have dependencies"",
+                ""B"": ""Generating multiple parallel regions within a given team of threads"",
+                ""C"": ""Creating a parallel region within another parallel region"",
+                ""D"": ""Collapsing nested loops into a single level of parallelism""
+            },
+            ""Answer"": ""C""
+        },
+        {
+            ""Question"": ""Which of the following is NOT a typical reason for OpenMP thread overhead?"",
+            ""Options"": {
+                ""A"": ""Thread creation and termination"",
+                ""B"": ""Task scheduling"",
+                ""C"": ""Barrier synchronization"",
+                ""D"": ""Processor clock speed""
+            },
+            ""Answer"": ""D""
+        },
+        {
+            ""Question"": ""In OpenMP, when would using 'atomic' be more appropriate than 'critical'?"",
+            ""Options"": {
+                ""A"": ""When the block of code that needs to be executed atomically is large"",
+                ""B"": ""When protecting complex data structures"",
+                ""C"": ""For simple update operations to a single memory location"",
+                ""D"": ""Whenever barrier synchronization is required""
+            },
+            ""Answer"": ""C""
+        },
+        {
+            ""Question"": ""Which directive is used in OpenMP to"

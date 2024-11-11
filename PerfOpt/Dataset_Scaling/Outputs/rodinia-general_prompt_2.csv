@@ -1,0 +1,43 @@
+prompt,response
+"Generate 10 OpenMP performance optimization Yes/No questions. The generated questions should be in the form of a list of json objects containing the following fields: Question: <generated question>, Answer: <Correct answer to the generated question 'Yes' or 'No'>.","[
+    {
+        ""Question"": ""Is using nested parallelism likely to result in performance improvement?"",
+        ""Answer"": ""No""
+    },
+    {
+        ""Question"": ""For optimal performance, should you typically ensure the number of threads is not significantly greater than the number of processing cores?"",
+        ""Answer"": ""Yes""
+    },
+    {
+        ""Question"": ""Is declaring less often accessed shared data with the 'firstprivate' clause recommended for optimization?"",
+        ""Answer"": ""Yes""
+    },
+    {
+        ""Question"": ""Can setting the OpenMP schedule type to 'dynamic' increase performance for workloads where iteration times are not predictable?"",
+        ""Answer"": ""Yes""
+    },
+    {
+        ""Question"": ""Does using the 'nowait' clause often lead to a decrease in performance due to an increased risk of race conditions?"",
+        ""Answer"": ""No""
+    },
+    {
+        ""Question"": ""To increase performance, is it a good practice to avoid false sharing by trying to ensure that each thread works on a different cache line?"",
+        ""Answer"": ""Yes""
+    },
+    {
+        ""Question"": ""Can a performance optimization technique be to combine multiple smaller parallel regions into a single larger one?"",
+        ""Answer"": ""Yes""
+    },
+    {
+        ""Question"": ""Is it a good practice to perform I/O operations inside a parallel region to optimize OpenMP performance?"",
+        ""Answer"": ""No""
+    },
+    {
+        ""Question"": ""Does the use of reduction operations in OpenMP generally optimize performance?"",
+        ""Answer"": ""Yes""
+    },
+    {
+        ""Question"": ""Should the number of threads be set to the maximum number available on the system for best performance?"",
+        ""Answer"": ""No""
+    }
+]"

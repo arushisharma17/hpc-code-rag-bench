@@ -1,0 +1,103 @@
+prompt,response
+"Generate 10 multiple choice questions about advanced OpenMP performance optimization concepts. The generated questions should be in the form of a list of json objects containing the following fields: Question: <generated question>, Options: <Four options A, B, C, and D with one correct answer>, Answer: Correct answer to the generated question 'A', 'B', 'C', or 'D'.","[
+  {
+    ""Question"": ""Which OpenMP directive is best suited to break down a loop across multiple threads?"",
+    ""Options"": {
+      ""A"": ""#pragma omp critical"",
+      ""B"": ""#pragma omp parallel for"",
+      ""C"": ""#pragma omp master"",
+      ""D"": ""#pragma omp single""
+    },
+    ""Answer"": ""B""
+  },
+  {
+      ""Question"": ""What can lead to false sharing in OpenMP and hinder performance optimization?"",
+      ""Options"": {
+        ""A"": ""Efficient Memory Management"",
+        ""B"": ""Compiling with Optimization Flags"",
+        ""C"": ""Unnecessary sharing of memory locations by threads"",
+        ""D"": ""Appropriate work distribution among threads""
+      },
+      ""Answer"": ""C""
+    },
+    {
+      ""Question"": ""Which OpenMP clause helps to achieve computation and load balancing across threads?"",
+      ""Options"": {
+        ""A"": ""schedule(dynamic)"",
+        ""B"": ""schedule(static)"",
+        ""C"": ""schedule(guided)"",
+        ""D"": ""All the above""
+      },
+      ""Answer"": ""D""
+    },
+    {
+      ""Question"": ""What does the 'collapse' clause in OpenMP do?"",
+      ""Options"": {
+        ""A"": ""It collapses nested loops into a single loop"",
+        ""B"": ""It collapses the program to a single thread"",
+        ""C"": ""It collapses the nested parallel regions"",
+        ""D"": ""None of the above""
+      },
+      ""Answer"": ""A""
+    },
+    {
+      ""Question"": ""What will be the effect of setting OMP_NESTED to true?"",
+      ""Options"": {
+        ""A"": ""Enables thread stealing"",
+        ""B"": ""Enables nested parallelism"",
+        ""C"": ""Enables loop unrolling"",
+        ""D"": ""Enables direct memory access""
+      },
+      ""Answer"": ""B""
+    },
+    {
+      ""Question"": ""Which OpenMP clause can be used to ensure a section of the code is executed only by the master thread?"",
+      ""Options"": {
+        ""A"": ""#pragma omp master"",
+        ""B"": ""#pragma omp for"",
+        ""C"": ""#pragma omp section"",
+        ""D"": ""#pragma omp single""
+      },
+      ""Answer"": ""A""
+    },
+    {
+      ""Question"": ""In context of OpenMP, what is 'Thread Affinity' and how it helps in performance optimization?"",
+      ""Options"": {
+        ""A"": ""It is a technique to bind threads to specific cores to maximize cache usage"",
+        ""B"": ""It is a technique to ensure all threads have equal access to shared variables"",
+        ""C"": ""It is a technique to divide the execution of the program into stages and synchronize the threads"",
+        ""D"": ""None of the above""
+      },
+      ""Answer"": ""A""
+    },
+    {
+      ""Question"": ""What is the effect of 'barrier' in an OpenMP program?"",
+      ""Options"": {
+        ""A"": ""It is a point where all threads synchronize their execution"",
+        ""B"": ""It is a point where all threads stop their execution"",
+        ""C"": ""It is a point where new threads are created"",
+        ""D"": ""It is a point where existing threads are terminated""
+      },
+      ""Answer"": ""A""
+    },
+    {
+      ""Question"": ""What is the main purpose of implementing 'task' in OpenMP?"",
+      ""Options"": {
+        ""A"": ""To improve cache coherence"",
+        ""B"": ""To facilitate nested parallelism"",
+        ""C"": ""To make recursive parallelism possible"",
+        ""D"": ""To improve system's I/O operations""
+      },
+      ""Answer"": ""C""
+    },
+    {
+      ""Question"": ""What does the 'atomic' clause in OpenMP do?"",
+      ""Options"": {
+        ""A"": ""It ensures that the enclosed assignment operation is not interrupted by another thread"",
+        ""B"": ""It ensures that all operations in the program are executed in a certain order"",
+        ""C"": ""It ensures that the thread performing a certain operation is not pre-empted"",
+        ""D"": ""There is no such clause in OpenMP""
+      },
+      ""Answer"": ""A""
+    }
+]"

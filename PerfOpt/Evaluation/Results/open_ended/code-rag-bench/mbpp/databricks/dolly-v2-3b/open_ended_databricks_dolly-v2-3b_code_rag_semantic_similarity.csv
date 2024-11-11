@@ -1,0 +1,81 @@
+Prompt,Response,Correct Answer,Similarity,Is Correct
+"You are an openmp performance optimization expert. Provide complete, syntactically and semantically correct answers to performance optimization questions based on the given code samples. 
+ Context: The following performsremove_Occ
+ <code> 
+# Write a python function to remove first and last occurrence of a given character from the string.
+def remove_Occ(s,ch): 
+    for i in range(len(s)): 
+        if (s[i] == ch): 
+            s = s[0 : i] + s[i + 1:] 
+            break
+    for i in range(len(s) - 1,-1,-1):  
+        if (s[i] == ch): 
+            s = s[0 : i] + s[i + 1:] 
+            break
+    return s 
+ </code> 
+
+ Context: The following performscheck_Equality
+ <code> 
+# Write a python function to check whether the first and last characters of a given string are equal or not.
+def check_Equality(str):
+  if (str[0] == str[-1]):  
+    return (""Equal"") 
+  else:  
+    return (""Not Equal"") 
+ </code> 
+
+ Context: The following performsremove_Char
+ <code> 
+# Write a python function to remove all occurrences of a character in a given string.
+def remove_Char(s,c) :  
+    counts = s.count(c) 
+    s = list(s) 
+    while counts :  
+        s.remove(c) 
+        counts -= 1 
+    s = '' . join(s)   
+    return (s) 
+ </code> 
+ 
+ Question: Write a python function to remove first and last occurrence of a given character from the string.",'aa',"def remove_Occ(s,ch): 
+    for i in range(len(s)): 
+        if (s[i] == ch): 
+            s = s[0 : i] + s[i + 1:] 
+            break
+    for i in range(len(s) - 1,-1,-1):  
+        if (s[i] == ch): 
+            s = s[0 : i] + s[i + 1:] 
+            break
+    return s ",0.09576137363910675,False
+"You are an openmp performance optimization expert. Provide complete, syntactically and semantically correct answers to performance optimization questions based on the given code samples. 
+ Context: The following performssort_matrix
+ <code> 
+# Write a function to sort a given matrix in ascending order according to the sum of its rows.
+def sort_matrix(M):
+    result = sorted(M, key=sum)
+    return result
+ </code> 
+
+ Context: The following performsSort
+ <code> 
+# Write a python function to sort a list according to the second element in sublist.
+def Sort(sub_li): 
+    sub_li.sort(key = lambda x: x[1]) 
+    return sub_li 
+ </code> 
+
+ Context: The following performssort_numeric_strings
+ <code> 
+# Write a function to sort a given list of strings of numbers numerically.
+def sort_numeric_strings(nums_str):
+    result = [int(x) for x in nums_str]
+    result.sort()
+    return result
+ </code> 
+ 
+ Question: Write a function to sort a given matrix in ascending order according to the sum of its rows."," [2, 4, 1]]","def sort_matrix(M):
+    result = sorted(M, key=sum)
+    return result",0.16874374449253082,False
+
+Overall Accuracy,0.0

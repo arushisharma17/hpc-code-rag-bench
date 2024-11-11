@@ -1,0 +1,43 @@
+prompt,response
+"Generate 10 Yes/No questions about advanced OpenMP performance optimization concepts. The generated questions should be in the form of a list of json objects containing the following fields: Question: <generated question>, Answer: <Correct answer to the generated question 'Yes' or 'No'>.","[
+  {
+    ""Question"": ""Can the use of environment variables enhance OpenMP performance optimization?"",
+    ""Answer"": ""Yes""
+  },
+  {
+    ""Question"": ""Does OpenMP automatically align memory to optimize cache performance?"",
+    ""Answer"": ""No""
+  },
+  {
+    ""Question"": ""Is it possible to achieve better performance by distributed work across multiple threads using OpenMP’s work-sharing constructs?"",
+    ""Answer"": ""Yes""
+  },
+  {
+    ""Question"": ""Does OpenMP guarantee the order of execution of parallel tasks?"",
+    ""Answer"": ""No"" 
+  },
+  {
+    ""Question"": ""Can explicitly managing thread affinity improve OpenMP performance?"",
+    ""Answer"": ""Yes""
+  },
+  {
+    ""Question"": ""Is it unnecessary to avoid race conditions when programming with OpenMP for maximum performance?"",
+    ""Answer"": ""No""
+  },
+  {
+    ""Question"": ""Can vectorization be combined with OpenMP to increase performance?"",
+    ""Answer"": ""Yes""
+  },
+  {
+    ""Question"": ""Does using as many threads as possible always lead to faster programs in OpenMP?"",
+    ""Answer"": ""No""
+  },
+  {
+    ""Question"": ""Can using OpenMP's schedule clause guide the compiler to make better decisions for loop iteration distribution?"",
+    ""Answer"": ""Yes""
+  },
+  {
+    ""Question"": ""Is data locality irrelevant for optimizing OpenMP programs?"",
+    ""Answer"": ""No""
+  }
+]"
