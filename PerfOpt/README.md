@@ -117,13 +117,13 @@ The project is organized into several directories, as follows:
     ```bash
     python3 -m create.{"py_file"}
     ```
-  - where py_file is one of the create functions in hpc-code-rag-bench
-  - This creates a /dataset directory with corpus.jsonl, query.jsonl and qrels. For the purposes of using retrieval, we only care about query and corpus where corpus is our list of context information for the datastore.
+  - where py_file is one of the create functions in hpc-code-rag-bench such as /retrieval/create/mcqa.py or /retrieval/create/open_ended.py
+  - This creates a /datasets directory with corpus.jsonl, query.jsonl and qrels. For the purposes of using retrieval, we only care about query and corpus where corpus is our list of context information for the datastore.
   - Note that the query will be generated with the provided datasets only and for an isolated query file, we will need to parse the data separately
-### TODO
-- Create function to create corpus and query files separately to facilitate testing on data that is not contained in the datastore.
-- Create function to merge corpus libraries from multiple datasets and/or multiple runs of the create function
+  - Make sure both corpus.jsonl and retrieval.json files are in the directory /results this directory should be in the same level as the /evaluation directory.
 
+- For future datasets to be used as query or corpus, custom functions need to be written to parse them into the right format
+  - For simplicity, just follow the structure in file /retrieval/create/mcqa.py
 ## Evaluation
 
 - To run the evaluation code on different datasets and models, follow these steps:

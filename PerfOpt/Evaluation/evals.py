@@ -194,6 +194,18 @@ def process_cot_response(response_str):
 
 
 def bleu_score_evaluation(open_ended_Dataset, model_name, args):
+    """
+    Evaluate a language model based on bleu score between the model's response and the correct answer for open response questions.
+
+    Parameters:
+    - open_ended_Dataset (dict): A dataset containing open ended questions and answers.
+    - model_name (str): The name of the model to be evaluated.
+    - args (Namespace): An argparse Namespace containing 'dataset_type' and 'prompt_type'.
+
+    Returns:
+    - accuracy (float): The proportion of correctly answered questions.
+    - results (list): A list of dictionaries containing prompts, responses, correct answers, and correctness flags.
+    """
     sum = 0
     total = 0
     results = []
