@@ -12,6 +12,9 @@ cd hpc-code-rag-bench
 sbatch setup.sh Path/to/project/PerfOpt #/work/LAS/jannesar-lab/arushi/PerfOpt
 ```
 
+## Pipeline
+![Pipeline](pipeline.png)
+
 ## Organization
 - [Retrieval](retrieval/): Code to run retrieval, with BM25, dense retrievers via [sentence-transformers](https://www.sbert.net/), and proprietary API embeddings.
 - [Generation](generation/): Code to run model generation and execution-based evaluation.
