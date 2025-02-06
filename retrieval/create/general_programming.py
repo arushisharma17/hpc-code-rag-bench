@@ -36,7 +36,7 @@ def main():
     args = parser.parse_args()
 
     path = os.path.join(args.output_dir, args.output_name)
-    os.makedirs(path)
+    os.makedirs(path, exist_ok=True)
     os.makedirs(os.path.join(path, "qrels"), exist_ok=True)
 
     split_dict = {}
@@ -50,6 +50,7 @@ def main():
         dataset_name: datasets.load_dataset(HF_NAME_DICT[dataset_name])
         for dataset_name in args.dataset_names
     }
+    print("[debug] dataset_dict", dataset_dict)
     docs, queries = [], []
     for split, ds_names in split_dict.items():
         for ds in ds_names:
@@ -61,7 +62,7 @@ def main():
 
         qrels_path = os.path.join(path, "qrels", f"{split}.tsv")
         save_tsv_dict(qrels_split, qrels_path, ["query-id", "corpus-id", "score"])
-    
+
     save_file_jsonl(queries, os.path.join(path, "queries.jsonl"))
     save_file_jsonl(docs, os.path.join(path, "corpus.jsonl"))
 

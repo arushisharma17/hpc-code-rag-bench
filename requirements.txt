@@ -16,3 +16,4 @@ unidiff
 GitPython
 evaluate
 requests
+accelerate

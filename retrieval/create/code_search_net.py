@@ -28,12 +28,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--language", type=str, default="python", help="codesearch net language")
     parser.add_argument("--output_dir", type=str, default="datasets")
-
+    print("here 1")
     args = parser.parse_args()
     dataset = datasets.load_dataset("code_search_net", args.language)
-
+    print("here 2")
     path = os.path.join(args.output_dir, "code_search_net_{}".format(args.language))
     os.makedirs(path)
+    print("path is", path)
     os.makedirs(os.path.join(path, "qrels"))
 
     docs = []
