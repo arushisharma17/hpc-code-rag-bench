@@ -1,0 +1,15 @@
+# generation without retrieval
+API_KEY=dummy-for-now python main.py --tasks "humaneval" \
+--model "bigcode/starcoder2-3b" \
+--dataset_path "openai_humaneval" \
+--allow_code_execution \
+--load_in_8bit \
+--trust_remote_code
+
+# generation with retrieval
+API_KEY=dummy-for-now python main.py --tasks "humaneval" \
+--model "bigcode/starcoder2-3b" \
+--dataset_path "json" \
+--data_files_test "/home/adis/projects/courses/spring2025/coms-599/hpc-code-rag-bench/retrieval/results/BAAI/bge-base-en-v1.5_humaneval_results.json" \
+--allow_code_execution \
+--load_in_8bit
