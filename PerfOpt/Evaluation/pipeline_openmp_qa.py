@@ -2,6 +2,7 @@ import torch
 import json
 import os
 import openai
+from openai import OpenAI
 from transformers import (
     pipeline,
     AutoTokenizer,
@@ -53,12 +54,18 @@ def llm_generate_gpt(model: str, question: str, pdf_files='', langchain_embeddin
     if pdf_files == '':
         msg = [{"role": "system", "content": "You are an OpenMP export."}]
         msg.append({"role": "user", "content": question})
-        response = openai.ChatCompletion.create(
-            model=model,
+        client = OpenAI()
+        response = client.chat.completions.create(
             messages=msg,
+            model=model,
             **parameters
         )
-        return response['choices'][0]['message']['content']
+        # response = openai.ChatCompletion.create(
+        #     model=model,
+        #     messages=msg,
+        #     **parameters
+        # )
+        return response.choices[0].message.content
     else:
         return llm_langchain(question, pdf_files, model, langchain_embedding)
 
