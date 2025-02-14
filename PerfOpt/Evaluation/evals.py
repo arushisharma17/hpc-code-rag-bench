@@ -7,15 +7,9 @@ import csv
 import os
 import json
 import re
-import openai
 from nltk.translate.bleu_score import sentence_bleu
-import code_bert_score
 from ragas.llms import LangchainLLMWrapper
-from langchain_openai import ChatOpenAI
-from metrics import ragas_framework
-from ragas.dataset_schema import SingleTurnSample
-from ragas.llms import LangchainLLMWrapper
-from ragas.metrics import LLMContextRecall
+from ragas.metrics import LLMContextRecall, LLMContextPrecisionWithReference, NoiseSensitivity, ResponseRelevancy, Faithfulness
 from langchain_openai import ChatOpenAI
 from ragas import evaluate
 from ragas import EvaluationDataset
@@ -96,7 +90,7 @@ def load_model_return_response(model_name, prompt):
         # Handle exceptions that may occur during model loading or prompt processing.
         print(f"An error occurred: {e}")
         response = None
-    
+
     return response
 
 
@@ -485,7 +479,7 @@ def llm_as_a_judge_evaluation(open_dataset, model_name, args):
     return accuracy, results
 
 
-def context_recall(dataset, model_name, args):
+def ragas_evaluation(dataset, model_name, args):
     dataset_for_ragas = []
 
     for idx, example in enumerate(dataset['train']):
@@ -497,17 +491,26 @@ def context_recall(dataset, model_name, args):
 
         print(f"Prompt #{idx + 1}:\n{prompt}\n{'-' * 80}")
         response = load_model_return_response(model_name, prompt)
+        print('response', response)
 
         dataset_for_ragas.append({
             "user_input": prompt_without_context,
             "retrieved_contexts": retrieved_contexts,
             "response": response,
-            "reference": correct_answer
+            "reference": correct_answer,
         })
 
+
     evaluation_dataset = EvaluationDataset.from_list(dataset_for_ragas)
+
     evaluator_llm = LangchainLLMWrapper(ChatOpenAI(model="gpt-4o-mini-2024-07-18", temperature=0))
-    result = evaluate(dataset=evaluation_dataset,metrics=[LLMContextRecall()], llm=evaluator_llm)
+    result = evaluate(dataset=evaluation_dataset, metrics=[
+        LLMContextRecall(),
+        LLMContextPrecisionWithReference(),
+        NoiseSensitivity(),
+        ResponseRelevancy(),
+        Faithfulness()
+    ], llm=evaluator_llm),
 
     print('context_recall result', result)
 
@@ -622,7 +625,7 @@ def main(args):
             store_eval_results_in_csv(args.dataset_type, args.data_file, args.prompt_type, args.eval_type, model_name, results, accuracy, args.rag)
             print(f"Model: {model_name} - Accuracy: {accuracy}")
         if args.eval_type == "ragas_context_recall":
-            context_recall(dataset, model_name, args)
+            ragas_evaluation(dataset, model_name, args)
             print('ragas_context_recall DONE')
         else:
             print("error")
