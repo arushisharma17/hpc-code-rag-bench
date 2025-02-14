@@ -10,6 +10,15 @@ import re
 import openai
 from nltk.translate.bleu_score import sentence_bleu
 import code_bert_score
+from ragas.llms import LangchainLLMWrapper
+from langchain_openai import ChatOpenAI
+from metrics import ragas_framework
+from ragas.dataset_schema import SingleTurnSample
+from ragas.llms import LangchainLLMWrapper
+from ragas.metrics import LLMContextRecall
+from langchain_openai import ChatOpenAI
+from ragas import evaluate
+from ragas import EvaluationDataset
 
 
 def load_dataset_from_hub(dataset_type, data_file, test_mode):
@@ -103,13 +112,17 @@ def create_LLM_prompt_from_example(example,dataset_type, prompt_type, rag):
     Returns:
     - str: A formatted string that serves as a prompt for a language model, containing the instruction (if provided),
            and the necessary information extracted from the example.
+   - str: Retrieved context (empty string if rag is false)
 
     '''
     # If prompt_type is 'none', set instruction to an empty string
     instruction = ''
     cont = ""
     context = []
+    retrieved_contexts = []
     rag_ins = ""
+    prompt_without_context = ''
+    prompt = ''
 
     #RAG prompt formatting
     if rag:
@@ -123,19 +136,34 @@ def create_LLM_prompt_from_example(example,dataset_type, prompt_type, rag):
         try:
             ret = [json.loads(line) for line in retrieval]
             cor = [json.loads(line) for line in corpus]
-
             #finds the relevant documents for the task and formats it into context
             for line in ret:
                 if task_id in line:
                     docs = line[task_id]
                     sorted_docs = sorted(docs.items(), key = lambda x: x[1], reverse = True) #sorts the documents based on their retrieval score
                     top_k = sorted_docs[:3] #leave only the top-k documents retrieved
+
+                    print()
+                    print()
+
+                    print('TOP K DOCUMENTS', top_k)
+                    print()
+                    print()
+
                     stentries = dict(top_k)
                     keys = list(stentries.keys())
 
                     lookup = {entry["_id"]: entry for entry in cor}
 
+                    print()
+                    print()
+                    print('LOOKUP', lookup)
+                    print()
+                    print()
+
                     for key in keys:
+                        # finds the associated document in the lookup table
+                        # to be added to context
                         if key in lookup:
                             title = lookup[key].get("title")
                             text = lookup[key].get("text")
@@ -146,10 +174,13 @@ def create_LLM_prompt_from_example(example,dataset_type, prompt_type, rag):
             corpus.close()
 
         for entry in context:
-                title = next(iter(entry))
-                info = entry[title]
-                cont += "\n Context: " + title + "\n" + info + "\n"
-        
+            title = next(iter(entry))
+            info = entry[title]
+            cont += "\n Context: " + title + "\n" + info + "\n"
+            retrieved_contexts.append(title + "\n" + info)
+
+        print('CONTEXT HERE', cont)
+
     if prompt_type != 'none':
         if dataset_type == 'mcq':
             try:
@@ -160,6 +191,7 @@ def create_LLM_prompt_from_example(example,dataset_type, prompt_type, rag):
             question = example['Code Snippet'] + " " + example['Question']
             options = f"A. {example['A']} B. {example['B']} C. {example['C']} D. {example['D']}"
             prompt = f"{instruction} {rag_ins}{cont}{question} Options: {options}"
+            prompt_without_context = f"{instruction} {rag_ins}{question} Options: {options}"
 
         elif dataset_type == 'open_ended':
             try:
@@ -169,11 +201,12 @@ def create_LLM_prompt_from_example(example,dataset_type, prompt_type, rag):
             
             question = example['Code Snippet'] + " " + example['Question']
             prompt = f"{instruction} {rag_ins} {cont} {question}"
+            prompt_without_context = f"{instruction} {rag_ins} {question}"
 
         else:
             raise ValueError(f"Invalid dataset type. Expected 'MCQ' or 'OPEN_ENDED', but got '{dataset_type}'.")
 
-    return prompt
+    return {'prompt': prompt, 'prompt_without_context': prompt_without_context, 'retrieved_contexts': retrieved_contexts }
 
 
 def process_cot_response(response_str):
@@ -213,7 +246,8 @@ def bleu_score_evaluation(open_ended_Dataset, model_name, args):
     for idx, example in enumerate(open_ended_Dataset['train']):
         print(f"Example #{idx + 1}: {example}\n{'-' * 80}")
         correct_answer = example['Answer']
-        prompt = create_LLM_prompt_from_example(example, args.dataset_type, args.prompt_type, args.rag)
+        llmPrompt = create_LLM_prompt_from_example(example, args.dataset_type, args.prompt_type, args.rag)
+        prompt = llmPrompt['prompt']
         if prompt is not None:
             print(f"Prompt #{idx + 1}:\n{prompt}\n{'-' * 80}")
             response = load_model_return_response(model_name, prompt)
@@ -275,7 +309,8 @@ def exact_match_evaluation(mcqa_dataset, model_name, args):
     for idx, example in enumerate(mcqa_dataset['train']):
         print(f"Example #{idx + 1}: {example}\n{'-' * 80}")
         correct_answer = example['Answer']
-        prompt = create_LLM_prompt_from_example(example, args.dataset_type, args.prompt_type, args.rag)
+        llmPrompt = create_LLM_prompt_from_example(example, args.dataset_type, args.prompt_type, args.rag)
+        prompt = llmPrompt['prompt']
         if prompt is not None:
             print(f"Prompt #{idx + 1}:\n{prompt}\n{'-' * 80}")
             response = load_model_return_response(model_name, prompt)
@@ -346,7 +381,8 @@ def semantic_similarity_evaluation(open_ended_dataset, model_name, args):
         #correct_answer = example['Answer']
         correct_answer = example["code"]
 
-        prompt = create_LLM_prompt_from_example(example, args.dataset_type, args.prompt_type, args.rag)
+        llmPrompt = create_LLM_prompt_from_example(example, args.dataset_type, args.prompt_type, args.rag)
+        prompt = llmPrompt['prompt']
 
         if prompt is not None:
             print(f"Prompt #{idx + 1}:\n{prompt}\n{'-' * 80}")
@@ -404,7 +440,9 @@ def llm_as_a_judge_evaluation(open_dataset, model_name, args):
     for idx, example in enumerate(open_dataset['train']):
         print(f"Example #{idx + 1}: {example}\n{'-' * 80}")
         correct_answer = example['Answer']
-        prompt = create_LLM_prompt_from_example(example, args.dataset_type, args.prompt_type)
+        llmPrompt = create_LLM_prompt_from_example(example, args.dataset_type, args.prompt_type)
+        prompt = llmPrompt['prompt']
+
         if prompt is not None:
             print(f"Prompt #{idx + 1}:\n{prompt}\n{'-' * 80}")
             response = load_model_return_response(model_name, prompt)
@@ -445,6 +483,35 @@ def llm_as_a_judge_evaluation(open_dataset, model_name, args):
         total += 1  # Increment total inside the loop
     accuracy = correct / total if total > 0 else 0  # Prevent division by zero
     return accuracy, results
+
+
+def context_recall(dataset, model_name, args):
+    dataset_for_ragas = []
+
+    for idx, example in enumerate(dataset['train']):
+        correct_answer = example['Answer']
+        llm_prompt = create_LLM_prompt_from_example(example, args.dataset_type, args.prompt_type, args.rag)
+        prompt = llm_prompt['prompt']
+        prompt_without_context = llm_prompt['prompt_without_context']
+        retrieved_contexts = llm_prompt['retrieved_contexts']
+
+        print(f"Prompt #{idx + 1}:\n{prompt}\n{'-' * 80}")
+        response = load_model_return_response(model_name, prompt)
+
+        dataset_for_ragas.append({
+            "user_input": prompt_without_context,
+            "retrieved_contexts": retrieved_contexts,
+            "response": response,
+            "reference": correct_answer
+        })
+
+    evaluation_dataset = EvaluationDataset.from_list(dataset_for_ragas)
+    evaluator_llm = LangchainLLMWrapper(ChatOpenAI(model="gpt-4o-mini-2024-07-18", temperature=0))
+    result = evaluate(dataset=evaluation_dataset,metrics=[LLMContextRecall()], llm=evaluator_llm)
+
+    print('context_recall result', result)
+
+    return result
 
 
 def store_eval_results_in_csv(dataset_type, data_file, prompt_type, eval_type, model_name, results, overall_accuracy, rag, overwrite=True):
@@ -554,6 +621,9 @@ def main(args):
             accuracy, results = llm_as_a_judge_evaluation(dataset, model_name, args)
             store_eval_results_in_csv(args.dataset_type, args.data_file, args.prompt_type, args.eval_type, model_name, results, accuracy, args.rag)
             print(f"Model: {model_name} - Accuracy: {accuracy}")
+        if args.eval_type == "ragas_context_recall":
+            context_recall(dataset, model_name, args)
+            print('ragas_context_recall DONE')
         else:
             print("error")
 
@@ -596,7 +666,7 @@ if __name__ == "__main__":
     parser.add_argument('--eval_type',
                         type=str,
                         default='none',  # Set the default value to 'none'
-                        choices=['exact_match','semantic_similarity','bleu_score','codebertscore','llm_as_a_judge'],
+                        choices=['exact_match','semantic_similarity','bleu_score','codebertscore','llm_as_a_judge', 'ragas_context_recall'],
                         help='The type of evaluation to be performed. "none" will use no additional prompt information.')
 
     args = parser.parse_args()

@@ -15,7 +15,8 @@
             "HuggingFaceH4/starchat-beta",
             "codellama/CodeLlama-7b-Instruct-hf",
             "codellama/CodeLlama-7b-hf",
-            "mattshumer/ref_70_e3"
+            "mattshumer/ref_70_e3",
+            "gpt-4o-mini-2024-07-18"
         ],
         "default_parameters": {
             "dolly2": {
