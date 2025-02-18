@@ -16,6 +16,9 @@
 #SBATCH --account=s2025.coms.599.3    # account to use
 
 # LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
+module purge
+module load micromamba
+module load git
 
 cd /work/classtmp/azhar/projects/hpc-code-rag-bench
 
