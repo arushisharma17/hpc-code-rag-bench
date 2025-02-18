@@ -20,6 +20,7 @@
 module purge
 module load micromamba
 module load git
+module load cuda
 
 cd /work/classtmp/azhar/projects/hpc-code-rag-bench
 
