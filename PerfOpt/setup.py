@@ -18,6 +18,7 @@ setup(
         'sentence_transformers',
         'instructorembedding',  
         'nltk',     
-        'code_bert_score', 
+        'code_bert_score',
+        'datasets'
     ],
 )
