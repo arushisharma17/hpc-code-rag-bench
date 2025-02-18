@@ -12,6 +12,8 @@
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
+#SBATCH --partition=instruction       # class node(s)
+#SBATCH --account=s2025.coms.599.3    # account to use
 
 # LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
 
