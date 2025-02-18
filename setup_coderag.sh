@@ -14,6 +14,7 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --partition=instruction       # class node(s)
 #SBATCH --account=s2025.coms.599.3    # account to use
+#SBATCH --gres=gpu:a100:1   # Required GPU hardware
 
 # LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
 module purge
