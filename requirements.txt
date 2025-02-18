@@ -26,10 +26,10 @@ sentence_transformers==3.1.1
 setuptools==75.8.0
 tenacity==9.0.0
 tensorflow==2.18.0
-tiktoken==0.6.0
-torch==2.3.0
+tiktoken==0.7.0
+torch==2.4.0
 tqdm==4.67.1
 transformers==4.40.0
 unidiff==0.7.5
-vllm==0.4.2
+vllm
 voyageai==0.3.2
