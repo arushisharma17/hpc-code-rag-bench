@@ -25,10 +25,6 @@ module load cuda
 
 cd /work/classtmp/azhar/projects/hpc-code-rag-bench/retrieval
 
-MODEL_NAME=$1
-MODEL_TAG=$2
-BATCH_SIZE=$3
-
 micromamba activate coderag
 
 # Define models and datasets as arrays
