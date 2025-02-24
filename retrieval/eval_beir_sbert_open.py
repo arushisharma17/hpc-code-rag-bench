@@ -26,7 +26,7 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
                     level=logging.INFO,
                     handlers=[LoggingHandler()])
 
-def get_top_docs(task_id: str, topk: int = 10) -> list[str]:
+def get_top_docs(task_id: str, topk: int = 10, results: dict = {}, corpus: dict = {}) -> list[str]:
     if task_id not in results:
         return []
     doc_scores = results[task_id]
@@ -42,10 +42,11 @@ def main():
     model = SentenceTransformer(args.model)
     retriever = EvaluateRetrieval(model, score_function="dot")
     documents, doc_ids = [], []
-    
+    corpus = {}
     # Load the retrieval corpus from HF dataset
     if args.hf_dataset is not None:
         corpus_data = list(load_dataset(args.hf_dataset)["train"])
+        # corpus_data = list(load_dataset(args.hf_dataset)["test"])
         corpus_ids = []
         for idx, passage in enumerate(corpus_data):
             passage["id"] = "{0}_{1}".format(args.hf_dataset.split("/")[-1], idx)
@@ -53,6 +54,7 @@ def main():
                 passage["text"] = passage["doc_content"]
             corpus_ids.append( "{0}_{1}".format(args.hf_dataset.split("/")[-1], idx))
         corpus = {doc["id"]: doc for doc in corpus_data}
+        print("corpus data sample", corpus_data[0]["id"])
 
     # Load pre-encoded embeddings 
     documents, doc_ids = {}, []
@@ -69,6 +71,9 @@ def main():
     documents_embeddings = []
     for doc_id in doc_ids:
         documents_embeddings.append(all_embeddings[doc_id])
+
+    print(f"there are {len(documents_embeddings)} embeddings")
+    # print("sample of documents_embeddings", documents_embeddings[0])
 
     if args.dataset.startswith("swe-bench") or args.dataset.startswith("repoeval"):
         all_eval_results = []
@@ -112,7 +117,7 @@ def main():
                 results[query_id] = {}
                 for doc_id, score in zip(doc_ids, similarities):
                     results[query_id][str(doc_id)] = float(score)
-                
+
             if "dummy" in queries:
                 queries.pop("dummy")
                 results.pop("dummy")
@@ -124,7 +129,7 @@ def main():
                 indices = [i for i,ex in enumerate(swebench) if ex["instance_id"] in queries]
                 for index in indices:
                     instance_id = swebench[index]["instance_id"]
-                    all_top_docs[index] = get_top_docs(results, corpus, instance_id)
+                    all_top_docs[index] = get_top_docs(task_id=instance_id, results=results, corpus=corpus)
             elif args.dataset.startswith("repoeval"):
                 args.dataset_path = "output/repoeval/datasets/function_level_completion_2k_context_codex.test.clean.jsonl"
                 tasks = [json.loads(line.strip()) for line in open(args.dataset_path, 'r')]
@@ -146,16 +151,22 @@ def main():
                         fout.write(json.dumps(curr, default=str) + "\n")
             else:
                 raise ValueError(f"`dataset` should starts with either 'swe-bench' or 'repoeval'.")
-    
+
     else:
         # Load dataset
         dataset = args.dataset
-        corpus, queries, qrels = GenericDataLoader(data_folder=os.path.join("datasets", dataset)).load(split="test")
-        corpus_ids, query_ids = list(corpus), list(queries)
+        # we remove "corpus" here because we wanna use the one retrieved from HF (see the if statement above)... and since it is open retrieval the corpus and queries are from different dataset
+        # corpus, queries, qrels = GenericDataLoader(data_folder=os.path.join("datasets", dataset)).load(split="test")
+
+        _, queries, qrels = GenericDataLoader(data_folder=os.path.join("datasets", dataset)).load(split="test")
+        # corpus_ids, query_ids = list(corpus), list(queries)
+        query_ids = list(queries)
+
+        print("shouldn't go here because we used HF_DATASET")
 
         # Compuete similarity
         results = {}
-        query_embeddings = [] 
+        query_embeddings = []
         # Generate embeddings in batches
         for i in tqdm(range(0, len(queries), args.batch_size)):
             end = min(len(queries), i + args.batch_size)
@@ -189,7 +200,8 @@ def main():
                 id_key = "problem_id"
             all_top_docs = []
             for task_id in ds["test"][id_key]:
-                all_top_docs.append(get_top_docs(f"{task_id}_doc"))
+                print("sample of corpus", corpus['library-documentation_0'])
+                all_top_docs.append(get_top_docs(task_id=f"{task_id}_doc", results=results, corpus=corpus))
             ds["test"] = ds["test"].add_column("docs", all_top_docs)
             ds["test"].to_json(args.results_file)  # this outputs to arrow format and read as .jsonl
         elif "odex" in args.dataset:
@@ -197,14 +209,14 @@ def main():
             ds = load_dataset("neulab/odex", lang)
             all_top_docs = []
             for idx, task_id in enumerate(ds["test"]["task_id"]):
-                all_top_docs.append(get_top_docs(f"{idx}_{task_id}"))
+                all_top_docs.append(get_top_docs(task_id=f"{idx}_{task_id}", results=results, corpus=corpus))
             ds["test"] = ds["test"].add_column("docs", all_top_docs)
             ds["test"].to_json(args.results_file)  # this outputs to arrow format and read as .jsonl
         elif args.dataset == "docprompting_conala":
             ds = load_dataset("neulab/docprompting-conala")
             all_top_docs = []
             for idx, task_id in enumerate(ds["test"]["question_id"]):
-                all_top_docs.append(get_top_docs(task_id))
+                all_top_docs.append(get_top_docs(task_id=task_id, results=results, corpus=corpus))
             ds["test"] = ds["test"].add_column("docs", all_top_docs)
             ds["test"].to_json(args.results_file)  # this outputs to arrow format and read as .jsonl
         elif args.dataset.startswith("ds1000"):
@@ -219,7 +231,7 @@ def main():
             for item in data:
                 example = item.data
                 example_id = f"{example['lib']}_{example['perturbation_origin_id']}"
-                all_docs.append(get_top_docs(example_id))
+                all_docs.append(get_top_docs(task_id=example_id, results=results, corpus=corpus))
                 example_ids.append(example_id)
             assert len(all_docs) == len(example_ids), f"length of all_docs should be {len(example_ids)}, now is {len(all_docs)}"
             with open(args.results_file, "w+") as fout:
