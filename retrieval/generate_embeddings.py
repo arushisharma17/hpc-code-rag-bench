@@ -24,7 +24,11 @@ def embed_passages(args, passages, model, tokenizer):
         for k, p in enumerate(passages):
             batch_ids.append(p["id"] if "id" in p else p["_id"])
             if "text" not in p:
-                p["text"] = p["_text"]
+                if "_text" in p:
+                    p["text"] = p["_text"]
+                # HF dataset code-rag-bench/library-documentation does not have text or _text, but uses doc_content
+                elif "doc_content" in p:
+                    p["text"] = p["doc_content"]
             if args.no_title or not "title" in p:
                 text = p["text"]
             else:
@@ -58,8 +62,15 @@ def main(args):
     tokenizer = None
 
     passages = list(datasets.load_dataset(args.hf_datasets)["train"])
+
+    if args.sample:
+        passages = passages[:5]
+
     for idx, passage in enumerate(passages):
         passage["id"] = "{0}_{1}".format(args.hf_datasets.split("/")[-1], idx)
+
+    print(f"number of passages: {len(passages)}")
+    print("sample passage", passages[0])
 
     shard_size = len(passages) // args.num_shards
     start_idx = args.shard_id * shard_size
@@ -71,6 +82,8 @@ def main(args):
     print(f"Embedding generation for {len(passages)} passages from idx {start_idx} to {end_idx}.")
 
     allids, allembeddings = embed_passages(args, passages, model, tokenizer)
+
+    print('sample allembeddings', allembeddings[0])
 
     embedding_id = args.shard_id + args.embedding_start_idx
     save_file = os.path.join(args.output_dir, args.prefix + f"_{embedding_id:02d}")
@@ -103,6 +116,7 @@ if __name__ == "__main__":
     parser.add_argument("--no_title", action="store_true", help="title not added to the passage body")
     parser.add_argument("--lowercase", action="store_true", help="lowercase text before encoding")
     parser.add_argument("--normalize_text", action="store_true", help="lowercase text before encoding")
+    parser.add_argument("--sample", action="store_true")
 
     args = parser.parse_args()
 
