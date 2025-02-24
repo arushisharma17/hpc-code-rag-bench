@@ -1,10 +1,9 @@
 # generation without retrieval
-API_KEY=dummy-for-now python main.py --tasks "humaneval" \
+OPENAI_API_KEY=dummy-for-now API_KEY=dummy-for-now python main.py --tasks "humaneval" \
 --model "bigcode/starcoder2-3b" \
 --dataset_path "openai_humaneval" \
 --allow_code_execution \
---load_in_8bit \
---trust_remote_code
+--load_in_8bit
 
 # generation with retrieval
 API_KEY=dummy-for-now python main.py --tasks "humaneval" \
@@ -13,3 +12,76 @@ API_KEY=dummy-for-now python main.py --tasks "humaneval" \
 --data_files_test "/home/adis/projects/courses/spring2025/coms-599/hpc-code-rag-bench/retrieval/results/BAAI/bge-base-en-v1.5_humaneval_results.json" \
 --allow_code_execution \
 --load_in_8bit
+
+-------
+
+# generate embeddings
+
+# using embedding model sentence-transformers/all-MiniLM-L6-v2
+python generate_embeddings.py \
+    --model sentence-transformers/all-MiniLM-L6-v2 \
+    --output_dir embeddings \
+    --prefix programming-solutions \
+    --hf_datasets code-rag-bench/programming-solutions \
+    --shard_id 0 \
+    --num_shards 1
+
+
+python generate_embeddings.py \
+    --model sentence-transformers/all-MiniLM-L6-v2 \
+    --output_dir embeddings \
+    --prefix library-documentation \
+    --hf_datasets code-rag-bench/library-documentation \
+    --shard_id 0 \
+    --num_shards 1
+
+# using embedding model BAAI/bge-m3
+
+python generate_embeddings.py \
+    --model BAAI/bge-m3 \
+    --output_dir embeddings-bge-m3 \
+    --prefix programming-solutions \
+    --hf_datasets code-rag-bench/programming-solutions \
+    --shard_id 0 \
+    --num_shards 1
+
+
+python generate_embeddings.py \
+    --model BAAI/bge-m3 \
+    --output_dir embeddings-bge-m3 \
+    --prefix library-documentation-sample \
+    --hf_datasets code-rag-bench/library-documentation \
+    --shard_id 0 \
+    --num_shards 1 \
+    --sample
+
+# using jinaai/jina-embeddings-v2-base-code
+
+python generate_embeddings.py \
+    --model jinaai/jina-embeddings-v2-base-code \
+    --output_dir embeddings-jina-embeddings-v2-base-code \
+    --prefix programming-solutions \
+    --hf_datasets code-rag-bench/programming-solutions \
+    --shard_id 0 \
+    --num_shards 1
+
+python generate_embeddings.py \
+    --model jinaai/jina-embeddings-v2-base-code \
+    --output_dir embeddings-jina-embeddings-v2-base-code \
+    --prefix library-documentation-sample \
+    --hf_datasets code-rag-bench/library-documentation \
+    --shard_id 0 \
+    --num_shards 1 \
+    --sample
+
+# open retrieval
+
+# (--dataset) query is from humaneval
+# (--hf_dataset) corpus is from code-rag-bench/library-documentation
+python3 eval_beir_sbert_open.py \
+    --model sentence-transformers/all-MiniLM-L6-v2 \
+    --embdding_path "embeddings-all-MiniLM-L6-v2/*" \
+    --dataset humaneval \
+    --hf_dataset code-rag-bench/library-documentation \
+    --output_file output/score.json \
+    --results_file output/results.json
