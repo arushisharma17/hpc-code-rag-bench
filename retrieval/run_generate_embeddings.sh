@@ -7,7 +7,7 @@
 #SBATCH --time=12:00:00   # walltime limit (HH:MM:SS)
 #SBATCH --nodes=1            # Number of nodes requested (1 nodes)
 #SBATCH --ntasks-per-node=36   # 36 processor core(s) per node
-#SBATCH --job-name="adis-generate-without-retrieval"
+#SBATCH --job-name="gen-embeddings"
 #SBATCH --mail-user=azhar@iastate.edu   # email address
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
