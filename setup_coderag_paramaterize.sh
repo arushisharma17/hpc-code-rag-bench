@@ -30,6 +30,7 @@ module load cuda
 cd "$PROJECT_DIR"
 
 echo "setting up crag"
+echo "PROJECT_DIR is $PROJECT_DIR, MICROMAMBA_ROOT_PATH is $MICROMAMBA_ROOT_PATH, MICROMAMBA_ENV_NAME is $MICROMAMBA_ENV_NAME, MICROMAMBA_ENV_PATH is $MICROMAMBA_ENV_PATH"
 
 eval "$(micromamba shell hook --shell=bash)"
 micromamba env create -n "$MICROMAMBA_ENV_NAME" python=3.10.16 -c conda-forge -y -r "$MICROMAMBA_ROOT_PATH"
