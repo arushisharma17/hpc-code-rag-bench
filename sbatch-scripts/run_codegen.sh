@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# e.g. to run:
+# ./run_codegen.sh --partition="instruction" --account="s2025.coms.599.3" --gres="gpu:a100:1" --mail-user="azhar@iastate.edu" --project-dir="/work/classtmp/azhar/projects/hpc-code-rag-bench" --micromamba-root-path="/work/classtmp/azhar/micromamba" --micromamba-env-name="hpccoderag" --hf-home-path="/work/classtmp/azhar/hf"
+
 # default param values
 partition="instruction"
 account="s2025.coms.599.3"
@@ -10,20 +13,19 @@ micromamba_root_path="/work/classtmp/azhar/micromamba"
 micromamba_env_name="hpccoderag"
 hf_home_path="/work/classtmp/azhar/hf"
 
-# parse params for cli
+# parse params from cli
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --partition) partition="$2"; shift ;;
-        --account) account="$2"; shift ;;
-        --gres) gres="$2"; shift ;;
-        --mail-user) mail_user="$2"; shift ;;
-        --project-dir) project_dir="$2"; shift ;;
-        --micromamba-root-path) micromamba_root_path="$2"; shift ;;
-        --micromamba-env-name) micromamba_env_name="$2"; shift ;;
-        --hf-home-path) hf_home_path="$2"; shift ;;
+        --partition=*) partition="${1#*=}"; shift ;;
+        --account=*) account="${1#*=}"; shift ;;
+        --gres=*) gres="${1#*=}"; shift ;;
+        --mail-user=*) mail_user="${1#*=}"; shift ;;
+        --project-dir=*) project_dir="${1#*=}"; shift ;;
+        --micromamba-root-path=*) micromamba_root_path="${1#*=}"; shift ;;
+        --micromamba-env-name=*) micromamba_env_name="${1#*=}"; shift ;;
+        --hf-home-path=*) hf_home_path="${1#*=}"; shift ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
-    shift
 done
 
 # codegen sripts we wanna run
