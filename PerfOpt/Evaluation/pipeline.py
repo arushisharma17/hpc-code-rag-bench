@@ -1,5 +1,7 @@
 import json
 import os
+
+from pipeline_code_generation import code_generation
 from pipeline_openmp_qa import openmp_question_answering
 from pipeline_codebase_qa import codebase_question_answering
 from pipeline_similaritycheck import similarity_checking
@@ -48,4 +50,5 @@ def hpcpipelines(task: str, model: str, **kwargs) -> callable:
         return lambda code1, code2: similarity_checking(model, code1, code2, **parameters)
     elif task == 'codebase_question_answering':
         return lambda question: codebase_question_answering(model, question, **parameters)
-    
+    elif task == 'code_generation':
+        return lambda question: code_generation(model, question, parameters)

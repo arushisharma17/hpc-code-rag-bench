@@ -42,6 +42,12 @@ EVALUATION_PROMPTS = {
         "index": 2,
         "text": "You are an openmp performance optimization expert. Provide useful, complete, and logically correct answers to performance optimization questions based on the given code samples.",
         "code": "You are an openmp performance optimization expert. Provide complete, syntactically and semantically correct answers to performance optimization questions based on the given code samples.",
+    },
+
+    # OpenMP code generation
+    "CODE_GENERATION": {
+        "index": 3,
+        "standard": "You are an expert in OpenMP performance optimization. Given a function signature, generate a complete and efficient C program that correctly implements the function using OpenMP. Ensure the implementation follows best practices for performance, scalability, and correctness."
     }
 }
 
