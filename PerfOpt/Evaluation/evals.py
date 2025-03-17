@@ -9,10 +9,13 @@ import json
 import re
 from nltk.translate.bleu_score import sentence_bleu
 from ragas.llms import LangchainLLMWrapper
-from ragas.metrics import LLMContextRecall, LLMContextPrecisionWithReference, NoiseSensitivity, ResponseRelevancy, Faithfulness
+from ragas.metrics import LLMContextRecall, LLMContextPrecisionWithReference, NoiseSensitivity, ResponseRelevancy, \
+    Faithfulness
 from langchain_openai import ChatOpenAI
 from ragas import evaluate
 from ragas import EvaluationDataset
+from tqdm import tqdm
+import datetime
 
 
 def load_dataset_from_hub(dataset_type, data_file, test_mode):
@@ -45,18 +48,20 @@ def load_dataset_from_hub(dataset_type, data_file, test_mode):
     # Load MCQ-type dataset from the HPCPerfOpt-MCQA repository on the Hugging Face Hub.
     if dataset_type == "mcq":
         dataset = load_dataset("sharmaarushi17/HPCPerfOpt-MCQA", data_files=data_file)
-        #dataset = load_dataset(data_file)
+        # dataset = load_dataset(data_file)
 
     # Load open-ended dataset from the HPCPerfOpt-Open-ended repository on the Hugging Face Hub.
     elif dataset_type == "open_ended":
         dataset = load_dataset("sharmaarushi17/HPCPerfOpt-Open-ended", data_files=data_file)
-        #dataset = load_dataset(data_file)
-
+        # dataset = load_dataset(data_file)
+    elif dataset_type == "code_generation":
+        data_files = {"test": data_file}
+        dataset = load_dataset("datasets/polybench-w-stackoverflow-corpus", data_files=data_files)
     # Raise an error if an invalid dataset_type is provided.
     else:
         raise ValueError(f"Invalid dataset_type: {dataset_type}")
 
-   # If test_mode is True, only take the first two examples from each split.
+    # If test_mode is True, only take the first two examples from each split.
     if test_mode:
         for split in dataset.keys():
             dataset[split] = dataset[split].select(range(2))
@@ -64,7 +69,7 @@ def load_dataset_from_hub(dataset_type, data_file, test_mode):
     return dataset
 
 
-def load_model_return_response(model_name, prompt):
+def load_model_return_response(model_name, prompt, task='openmp_question_answering', **kwargs):
     """
     Load a question-answering model specified by `model_name` and return the model's response to a given `prompt`.
 
@@ -82,7 +87,7 @@ def load_model_return_response(model_name, prompt):
 
     try:
         # Initialize the LM4HPC pipeline with the specified model.
-        OMP_QA_model = hpcpipelines(task="openmp_question_answering", model=model_name, pdf_files="", langchain_embedding="")  
+        OMP_QA_model = hpcpipelines(task=task, model=model_name, pdf_files="", langchain_embedding="", **kwargs)
         # Generate response using the model.
         response = OMP_QA_model(prompt)
 
@@ -94,7 +99,8 @@ def load_model_return_response(model_name, prompt):
     return response
 
 
-def create_LLM_prompt_from_example(example,dataset_type, prompt_type, rag):
+def create_LLM_prompt_from_example(example, dataset_type, prompt_type, rag, k_documents=3,
+                                   retrieval_path='../results/retrieval.json', corpus_path='../results/corpus.jsonl'):
     '''
     Generate a language model prompt for a given example, based on instructions stored in EVALUATION_PROMPTS dictionary stored in prompts.py
 
@@ -118,42 +124,34 @@ def create_LLM_prompt_from_example(example,dataset_type, prompt_type, rag):
     prompt_without_context = ''
     prompt = ''
 
-    #RAG prompt formatting
+    # RAG prompt formatting
     if rag:
-        task_id = example["Source"]
-        task_id = str(task_id) + "_doc"
-        retrieval = open("../results/retrieval.json", "r")
-        corpus = open("../results/corpus.jsonl", "r")
-        #Additional information to tell the LM that context is being provided for the task
+        if dataset_type == 'code_generation':
+            task_id = example['_id']
+        else:
+            task_id = example["Source"]
+            task_id = str(task_id) + "_doc"
+
+        retrieval = open(retrieval_path, "r")
+        corpus = open(corpus_path, "r")
+        # Additional information to tell the LM that context is being provided for the task
         rag_ins = " \n Below are additional contexts followed by the task, contexts may or may not help in answering or completing the task. \n"
 
         try:
             ret = [json.loads(line) for line in retrieval]
             cor = [json.loads(line) for line in corpus]
-            #finds the relevant documents for the task and formats it into context
+            # finds the relevant documents for the task and formats it into context
             for line in ret:
                 if task_id in line:
                     docs = line[task_id]
-                    sorted_docs = sorted(docs.items(), key = lambda x: x[1], reverse = True) #sorts the documents based on their retrieval score
-                    top_k = sorted_docs[:3] #leave only the top-k documents retrieved
-
-                    print()
-                    print()
-
-                    print('TOP K DOCUMENTS', top_k)
-                    print()
-                    print()
+                    sorted_docs = sorted(docs.items(), key=lambda x: x[1],
+                                         reverse=True)  # sorts the documents based on their retrieval score
+                    top_k = sorted_docs[:k_documents]  # leave only the top-k documents retrieved
 
                     stentries = dict(top_k)
                     keys = list(stentries.keys())
 
                     lookup = {entry["_id"]: entry for entry in cor}
-
-                    print()
-                    print()
-                    print('LOOKUP', lookup)
-                    print()
-                    print()
 
                     for key in keys:
                         # finds the associated document in the lookup table
@@ -173,14 +171,13 @@ def create_LLM_prompt_from_example(example,dataset_type, prompt_type, rag):
             cont += "\n Context: " + title + "\n" + info + "\n"
             retrieved_contexts.append(title + "\n" + info)
 
-        print('CONTEXT HERE', cont)
-
     if prompt_type != 'none':
         if dataset_type == 'mcq':
             try:
                 instruction = EVALUATION_PROMPTS["MCQA"][prompt_type]
             except KeyError:
-                raise ValueError(f"Prompt type '{prompt_type}' does not exist for dataset type 'MCQA' in EVALUATION_PROMPTS.")
+                raise ValueError(
+                    f"Prompt type '{prompt_type}' does not exist for dataset type 'MCQA' in EVALUATION_PROMPTS.")
 
             question = example['Code Snippet'] + " " + example['Question']
             options = f"A. {example['A']} B. {example['B']} C. {example['C']} D. {example['D']}"
@@ -191,16 +188,28 @@ def create_LLM_prompt_from_example(example,dataset_type, prompt_type, rag):
             try:
                 instruction = EVALUATION_PROMPTS["OPEN_ENDED"][prompt_type]
             except KeyError:
-                raise ValueError(f"Prompt type '{prompt_type}' does not exist for dataset type 'OPEN_ENDED' in EVALUATION_PROMPTS.")
-            
+                raise ValueError(
+                    f"Prompt type '{prompt_type}' does not exist for dataset type 'OPEN_ENDED' in EVALUATION_PROMPTS.")
+
             question = example['Code Snippet'] + " " + example['Question']
             prompt = f"{instruction} {rag_ins} {cont} {question}"
             prompt_without_context = f"{instruction} {rag_ins} {question}"
 
+        elif dataset_type == "code_generation":
+            try:
+                instruction = EVALUATION_PROMPTS["CODE_GENERATION"][prompt_type]
+            except KeyError:
+                raise ValueError(
+                    f"Prompt type '{prompt_type}' does not exist for dataset type 'CODE_GENERATION' in EVALUATION_PROMPTS.")
+
+            question = f"You must implement the following function \n{example['text']}"
+            prompt = f"{instruction} {rag_ins} {cont} {question}"
+            prompt_without_context = f"{instruction} {rag_ins} {question}"
         else:
             raise ValueError(f"Invalid dataset type. Expected 'MCQ' or 'OPEN_ENDED', but got '{dataset_type}'.")
 
-    return {'prompt': prompt, 'prompt_without_context': prompt_without_context, 'retrieved_contexts': retrieved_contexts }
+    return {'prompt': prompt, 'prompt_without_context': prompt_without_context,
+            'retrieved_contexts': retrieved_contexts}
 
 
 def process_cot_response(response_str):
@@ -236,7 +245,7 @@ def bleu_score_evaluation(open_ended_Dataset, model_name, args):
     sum = 0
     total = 0
     results = []
-    weights = (1.0, 0.0, 0.0) #ngram weights, position indicates n, value is weights
+    weights = (1.0, 0.0, 0.0)  # ngram weights, position indicates n, value is weights
     for idx, example in enumerate(open_ended_Dataset['train']):
         print(f"Example #{idx + 1}: {example}\n{'-' * 80}")
         correct_answer = example['Answer']
@@ -248,7 +257,7 @@ def bleu_score_evaluation(open_ended_Dataset, model_name, args):
             if response:
                 response = response.replace("\n", "")
             if response:  # Check if response is not empty
-                print("response",response)
+                print("response", response)
                 response_type = type(response)
                 print(f"The type of 'response' is: {response_type}")
                 if correct_answer is not None:
@@ -280,8 +289,86 @@ def bleu_score_evaluation(open_ended_Dataset, model_name, args):
     return accuracy, results
 
 
+def extract_c_code(text):
+    pattern = re.compile(r'```c(.*?)```', re.DOTALL)
+    matches = pattern.findall(text)
+    return [match.strip() for match in matches]
+
+
+def remove_function(c_code, function_name):
+    pattern = re.compile(r'\b(?:int|void)\s+' + re.escape(function_name) + r'\s*\(', re.MULTILINE)
+    match = pattern.search(c_code)
+
+    if not match:
+        return c_code  # Function not found, return original code
+
+    start = match.start()
+    brace_count = 0
+    index = match.end()
+
+    # Find the opening brace
+    while index < len(c_code) and c_code[index] != '{':
+        index += 1
+
+    if index >= len(c_code):
+        return c_code  # No function body found
+
+    # Find the matching closing brace
+    while index < len(c_code):
+        if c_code[index] == '{':
+            brace_count += 1
+        elif c_code[index] == '}':
+            brace_count -= 1
+            if brace_count == 0:
+                return c_code[:start] + c_code[index + 1:]  # Remove function
+        index += 1
+
+    return c_code  # Return original if unmatched braces
+
+
 def codebertscore_evaluation(dataset, model_name, args):
-    """TODO"""
+    responses = []
+    data = {
+        'model_name': model_name,
+        'retrieval_path': args.retrieval_path,
+        'corpus_path': args.corpus_path,
+        'k_documents': args.k_documents,
+        'rag': args.rag
+    }
+    idx = 1
+    for question in tqdm(dataset['test']):
+        prompt = create_LLM_prompt_from_example(question, args.dataset_type, args.prompt_type, args.rag,
+                                                k_documents=args.k_documents, retrieval_path=args.retrieval_path,
+                                                corpus_path=args.corpus_path)
+        print(f"Prompt {idx}: {prompt['prompt']}")
+        print()
+        model_args = {
+            'load_in_4bit': args.load_in_4bit
+        }
+        response = load_model_return_response(model_name=model_name, prompt=prompt['prompt'], task='code_generation',
+                                              **model_args)
+        print(f"response: {response}")
+
+        c_code = next(iter(extract_c_code(response)), '')
+        c_code = remove_function(c_code, 'main')
+
+        print(f"response after remove function: {c_code}")
+        responses.append({'_id': question['_id'], 'code': c_code, 'response': response})
+        idx += 1
+        print(f"{'-' * 80}")
+
+    data['code_gens'] = responses
+    current_timestamp = datetime.datetime.now()
+    unix_timestamp_ms = int(current_timestamp.timestamp() * 1000)
+    model_name_simple = model_name.replace('/', '')
+    dir_path = 'codegen-output'
+    os.makedirs(dir_path, exist_ok=True)
+    file_path = os.path.join(dir_path, f"{model_name_simple}-{unix_timestamp_ms}.json")
+    with open(file_path, "w") as f:
+        json.dump(data, f, indent=2)
+
+    return '', ''
+
 
 def exact_match_evaluation(mcqa_dataset, model_name, args):
     """
@@ -311,17 +398,17 @@ def exact_match_evaluation(mcqa_dataset, model_name, args):
             if response:
                 response = response.replace("\n", "")
             if response:  # Check if response is not empty
-                print("response",response)
+                print("response", response)
                 response_type = type(response)
                 print(f"The type of 'response' is: {response_type}")
                 if correct_answer is not None:
-                    if args.prompt_type=="standard":
+                    if args.prompt_type == "standard":
                         is_correct = (correct_answer in response)
-                    elif args.prompt_type=="cot":
-                        #get answer from json object and compare
+                    elif args.prompt_type == "cot":
+                        # get answer from json object and compare
                         ans = process_cot_response(response)
                         if ans is None:
-                            is_correct=False
+                            is_correct = False
                         else:
                             is_correct = (correct_answer.strip() == ans.strip())  # Strip spaces before comparison
                     else:
@@ -370,10 +457,11 @@ def semantic_similarity_evaluation(open_ended_dataset, model_name, args):
     correct_count = 0
 
     results = []
+    similarities = []
     for idx, example in enumerate(open_ended_dataset['train']):
         print(f"Example #{idx + 1}: {example}\n{'-' * 80}")
-        #correct_answer = example['Answer']
-        correct_answer = example["code"]
+        correct_answer = example['Answer']
+        # correct_answer = example["code"]
 
         llmPrompt = create_LLM_prompt_from_example(example, args.dataset_type, args.prompt_type, args.rag)
         prompt = llmPrompt['prompt']
@@ -383,7 +471,7 @@ def semantic_similarity_evaluation(open_ended_dataset, model_name, args):
             response = load_model_return_response(model_name, prompt)
             if response:  # Check if response is not empty
                 response = response.replace("\n", "")
-                print("response",response)
+                print("response", response)
                 response_type = type(response)
                 print(f"The type of 'response' is: {response_type}")
 
@@ -393,6 +481,8 @@ def semantic_similarity_evaluation(open_ended_dataset, model_name, args):
 
                 # Compute cosine similarity
                 cosine_similarity = util.pytorch_cos_sim(response_embedding, correct_answer_embedding).item()
+
+                similarities.append(cosine_similarity)
 
                 is_correct = cosine_similarity >= 0.3  # Adjust the threshold as needed
 
@@ -407,10 +497,14 @@ def semantic_similarity_evaluation(open_ended_dataset, model_name, args):
                 "is_correct": is_correct
             })
 
-            #Add model_name to store in csv
+            # Add model_name to store in csv
 
     num_rows = len(open_ended_dataset['train'])
     accuracy = correct_count / num_rows if num_rows > 0 else 0
+
+    average_similarity = sum(similarities) / len(similarities)
+    print("Average Cosine Similarity:", average_similarity)
+
     return accuracy, results
 
 
@@ -441,19 +535,19 @@ def llm_as_a_judge_evaluation(open_dataset, model_name, args):
             print(f"Prompt #{idx + 1}:\n{prompt}\n{'-' * 80}")
             response = load_model_return_response(model_name, prompt)
             if response:  # Check if response is not empty
-                print("response",response)
+                print("response", response)
                 response_type = type(response)
                 print(f"The type of 'response' is: {response_type}")
                 if correct_answer is not None:
-                    if args.prompt_type=="standard":
-                        #create prompt to use gpt-4 as a judge and evaluate the response
-                        judge_prompt = "Given the following ground truth answer and llm-generted response, determine whether the llm-generated response is correct in relation to the provided ground truth. Only output Y for Yes and N for No. Correct answer: " + correct_answer + "Response: " +  response 
+                    if args.prompt_type == "standard":
+                        # create prompt to use gpt-4 as a judge and evaluate the response
+                        judge_prompt = "Given the following ground truth answer and llm-generted response, determine whether the llm-generated response is correct in relation to the provided ground truth. Only output Y for Yes and N for No. Correct answer: " + correct_answer + "Response: " + response
                         is_correct = load_model_return_response("gpt-4", judge_prompt)
-                    elif args.prompt_type=="cot":
-                        #get answer from json object and compare
+                    elif args.prompt_type == "cot":
+                        # get answer from json object and compare
                         ans = process_cot_response(response)
                         if ans is None:
-                            is_correct=False
+                            is_correct = False
                         else:
                             is_correct = (correct_answer.strip() == ans.strip())  # Strip spaces before comparison
                     else:
@@ -500,7 +594,6 @@ def ragas_evaluation(dataset, model_name, args):
             "reference": correct_answer,
         })
 
-
     evaluation_dataset = EvaluationDataset.from_list(dataset_for_ragas)
 
     evaluator_llm = LangchainLLMWrapper(ChatOpenAI(model="gpt-4o-mini-2024-07-18", temperature=0))
@@ -517,7 +610,8 @@ def ragas_evaluation(dataset, model_name, args):
     return result
 
 
-def store_eval_results_in_csv(dataset_type, data_file, prompt_type, eval_type, model_name, results, overall_accuracy, rag, overwrite=True):
+def store_eval_results_in_csv(dataset_type, data_file, prompt_type, eval_type, model_name, results, overall_accuracy,
+                              rag, overwrite=True):
     """
     Store evaluation results in a CSV file.
 
@@ -571,16 +665,20 @@ def store_eval_results_in_csv(dataset_type, data_file, prompt_type, eval_type, m
         with open(output_csv, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             writer.writerow(headers)  # Write the headers
-            
+
             # Write the data
             for result in results:
                 if eval_type == "exact_match":
-                    writer.writerow([result['prompt'], result['response'], result['correct_answer'], result['is_correct']])
+                    writer.writerow(
+                        [result['prompt'], result['response'], result['correct_answer'], result['is_correct']])
                 elif eval_type == "semantic_similarity":
-                    writer.writerow([result['prompt'], result['response'], result['correct_answer'], result['similarity'], result['is_correct']])
+                    writer.writerow(
+                        [result['prompt'], result['response'], result['correct_answer'], result['similarity'],
+                         result['is_correct']])
                 elif eval_type == "bleu_score":
-                    writer.writerow([result['prompt'], result['response'], result['correct_answer'], result['score'], result['is_correct']])
-            
+                    writer.writerow([result['prompt'], result['response'], result['correct_answer'], result['score'],
+                                     result['is_correct']])
+
             # Append overall accuracy
             writer.writerow([])  # Add an empty row for separation
             writer.writerow(['Overall Accuracy', overall_accuracy])
@@ -598,35 +696,40 @@ def main(args):
     print(f"Loading {args.dataset_type} dataset from file: {args.data_file}")
     print(f"Using prompt type: {args.prompt_type}")
     print(f"Evaluating model(s): {', '.join(args.model_names)}")
-    
+    print(f"Top K Documents: {args.k_documents}")
+
     dataset = load_dataset_from_hub(args.dataset_type, args.data_file, args.test_mode)
-    print(f"Loaded dataset with {len(dataset['train'])} examples for evaluation.",dataset) 
-    
-    #need a loop for model_names
-    for model_name in args. model_names:
-        if args.eval_type=="exact_match":
+    split = 'train' if 'train' in dataset else 'test'
+    print(f"Loaded dataset with {len(dataset[split])} examples for evaluation.", dataset)
+
+    # need a loop for model_names
+    for model_name in args.model_names:
+        if args.eval_type == "exact_match":
             accuracy, results = exact_match_evaluation(dataset, model_name, args)
-            store_eval_results_in_csv(args.dataset_type, args.data_file, args.prompt_type, args.eval_type, model_name, results, accuracy, args.rag)
+            store_eval_results_in_csv(args.dataset_type, args.data_file, args.prompt_type, args.eval_type, model_name,
+                                      results, accuracy, args.rag)
             print(f"Model: {model_name} - Accuracy: {accuracy}")
-        elif args.eval_type=="semantic_similarity":
+        elif args.eval_type == "semantic_similarity":
             accuracy, results = semantic_similarity_evaluation(dataset, model_name, args)
-            store_eval_results_in_csv(args.dataset_type, args.data_file, args.prompt_type, args.eval_type, model_name, results, accuracy, args.rag)
+            store_eval_results_in_csv(args.dataset_type, args.data_file, args.prompt_type, args.eval_type, model_name,
+                                      results, accuracy, args.rag)
             print(f"Model: {model_name} - Accuracy: {accuracy}")
-        elif args.eval_type=="bleu_score":
+        elif args.eval_type == "bleu_score":
             accuracy, results = bleu_score_evaluation(dataset, model_name, args)
-            store_eval_results_in_csv(args.dataset_type, args.data_file, args.prompt_type, args.eval_type, model_name, results, accuracy, args.rag)
+            store_eval_results_in_csv(args.dataset_type, args.data_file, args.prompt_type, args.eval_type, model_name,
+                                      results, accuracy, args.rag)
             print(f"Model: {model_name} - Accuracy: {accuracy}")
-        elif args.eval_type=="codebertscore":
-            accuracy, results = codebertscore_evaluation(dataset, model_name, args)
-            store_eval_results_in_csv(args.dataset_type, args.data_file, args.prompt_type, args.eval_type, model_name, results, accuracy, args.rag)
-            print(f"Model: {model_name} - Accuracy: {accuracy}")
-        elif args.eval_type=="llm-as-judge":
+        elif args.eval_type == "codebertscore":
+            codebertscore_evaluation(dataset, model_name, args)
+            print('done generating for codebertscore')
+        elif args.eval_type == "llm-as-judge":
             accuracy, results = llm_as_a_judge_evaluation(dataset, model_name, args)
-            store_eval_results_in_csv(args.dataset_type, args.data_file, args.prompt_type, args.eval_type, model_name, results, accuracy, args.rag)
+            store_eval_results_in_csv(args.dataset_type, args.data_file, args.prompt_type, args.eval_type, model_name,
+                                      results, accuracy, args.rag)
             print(f"Model: {model_name} - Accuracy: {accuracy}")
-        if args.eval_type == "ragas_context_recall":
+        if args.eval_type == "ragas":
             ragas_evaluation(dataset, model_name, args)
-            print('ragas_context_recall DONE')
+            print('ragas DONE')
         else:
             print("error")
 
@@ -636,14 +739,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Evaluate a model using a dataset from the Hugging Face Hub.')
 
     # Add the arguments
-    parser.add_argument('--test_mode', action='store_true', help='Run in test mode to load a smaller part of the dataset.')
+    parser.add_argument('--test_mode', action='store_true',
+                        help='Run in test mode to load a smaller part of the dataset.')
 
     parser.add_argument('--rag', action='store_true', help='Run evaluation with retrieval augmentation')
 
     parser.add_argument('--dataset_type',
                         type=str,
                         required=True,
-                        choices=['mcq', 'open_ended'],
+                        choices=['mcq', 'open_ended', 'code_generation'],
                         help='The type of dataset to load. '
                              'Use "mcq" for multiple choice questions or "open_ended" for open-ended questions.')
 
@@ -665,12 +769,18 @@ if __name__ == "__main__":
                         default='none',  # Set the default value to 'none'
                         choices=['standard', 'cot', 'text', 'code', 'rag', 'none'],
                         help='The type of prompt to be used for the LLM. "none" will use no additional prompt information.')
-    
+
     parser.add_argument('--eval_type',
                         type=str,
                         default='none',  # Set the default value to 'none'
-                        choices=['exact_match','semantic_similarity','bleu_score','codebertscore','llm_as_a_judge', 'ragas_context_recall'],
+                        choices=['exact_match', 'semantic_similarity', 'bleu_score', 'codebertscore', 'llm_as_a_judge',
+                                 'ragas'],
                         help='The type of evaluation to be performed. "none" will use no additional prompt information.')
+    parser.add_argument('--k_documents', type=int, default=3)
+    parser.add_argument('--load_in_4bit', action='store_true', help='Run in quantized 4 bit mode')
+    parser.add_argument('--retrieval_path', type=str, default='',
+                        help='stores the retrieval embeddings scores for RAG context')
+    parser.add_argument('--corpus_path', type=str, default='', help='stores the corpus for RAG context')
 
     args = parser.parse_args()
     main(args)
