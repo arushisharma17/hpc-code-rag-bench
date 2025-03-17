@@ -4,16 +4,16 @@
 #    sbatch thefilename
 # job standard output will go to the file slurm-%j.out (where %j is the job ID)
 
+# e.g. to run:
+# sbatch --partition="instruction" --account="s2025.coms.599.3" --mail-user="azhar@iastate.edu" setup.sh
+
 #SBATCH --time=2:00:00   # walltime limit (HH:MM:SS)
 #SBATCH --nodes=1   # number of nodes
 #SBATCH --ntasks-per-node=36   # 36 processor core(s) per node
 #SBATCH --job-name="setup"
-#SBATCH --mail-user=azhar@iastate.edu   # email address
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
-#SBATCH --partition=instruction       # class node(s)
-#SBATCH --account=s2025.coms.599.3    # account to use
 
 # Parameterized variables
 PROJECT_DIR=${PROJECT_DIR:-"/work/classtmp/azhar/projects/hpc-code-rag-bench"}
