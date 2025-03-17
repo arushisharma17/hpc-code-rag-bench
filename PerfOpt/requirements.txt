@@ -3,7 +3,7 @@ langchain==0.3.18
 langchain_community==0.3.17
 langchain_openai==0.3.5
 nltk==3.9.1
-numpy==2.2.3
+numpy==1.26.4
 openai==1.63.0
 peft==0.14.0
 PyPDF2==3.0.1
@@ -13,3 +13,10 @@ setuptools==75.8.0
 tensorflow==2.18.0
 torch==2.6.0
 transformers==4.48.3
+datasets
+tqdm
+tree-sitter-c==0.21
+codebleu
+code-bert-score
+tf-keras
+bitsandbytes
