@@ -4,12 +4,9 @@
 #SBATCH --nodes=1            # Number of nodes requested (1 nodes)
 #SBATCH --ntasks-per-node=36   # 36 processor core(s) per node
 #SBATCH --job-name="codegen_github_deepseekcoder"
-#SBATCH --mail-user=azhar@iastate.edu   # email address
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
-#SBATCH --partition=instruction       # class node(s)
-#SBATCH --account=s2025.coms.599.3    # account to use
 #SBATCH --gres=gpu:a100:1   # Required GPU hardware
 
 
