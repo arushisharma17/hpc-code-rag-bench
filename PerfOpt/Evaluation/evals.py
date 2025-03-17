@@ -56,7 +56,7 @@ def load_dataset_from_hub(dataset_type, data_file, test_mode):
         # dataset = load_dataset(data_file)
     elif dataset_type == "code_generation":
         data_files = {"test": data_file}
-        dataset = load_dataset("datasets/polybench-w-stackoverflow-corpus", data_files=data_files)
+        dataset = load_dataset("datasets/polybench", data_files=data_files)
     # Raise an error if an invalid dataset_type is provided.
     else:
         raise ValueError(f"Invalid dataset_type: {dataset_type}")
