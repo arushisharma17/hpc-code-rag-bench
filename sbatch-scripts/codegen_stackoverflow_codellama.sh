@@ -42,7 +42,7 @@ for model in "${models[@]}"; do
     for retrieval in "${retrieval_paths[@]}"; do
         echo "Starting evaluation for model: $model with retrieval path: $retrieval"
 
-        python evals.py \
+        HF_HOME=$HF_HOME_PATH python evals.py \
             --dataset_type code_generation \
             --data_file queries.jsonl \
             --model_names "$model" \
