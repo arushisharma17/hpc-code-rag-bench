@@ -36,6 +36,7 @@ if __name__ == "__main__":
             result = subprocess.run("g++ -fopenmp tests/main.cpp -o tests/main && ./tests/main", shell=True,   timeout=10)
             exit_code = result.returncode
             print(f"exit code: {exit_code}")
+            print("\n\n")
             if exit_code == 0:
                 success += 1
             else:
