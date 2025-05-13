@@ -51,7 +51,8 @@ for model in "${models[@]}"; do
           --data_file queries.jsonl \
           --model_names "$model" \
           --prompt_type standard \
-          --eval_type codebertscore
+          --eval_type static_code_metric\
+          --dataset_name datasets/polybench
 
       echo "Finished evaluation for model: $model"
       echo "----------------------------------------"

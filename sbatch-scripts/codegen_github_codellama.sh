@@ -47,11 +47,12 @@ for model in "${models[@]}"; do
             --data_file queries.jsonl \
             --model_names "$model" \
             --prompt_type standard \
-            --eval_type codebertscore \
+            --eval_type static_code_metric \
             --rag \
             --k_documents 3 \
             --retrieval_path "$retrieval" \
-            --corpus_path "$corpus_path"
+            --corpus_path "$corpus_path" \
+            --dataset_name datasets/polybench
 
         echo "Finished evaluation for model: $model with retrieval path: $retrieval"
         echo "----------------------------------------"
