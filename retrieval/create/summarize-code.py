@@ -44,13 +44,17 @@ Given function
 
 
 def main():
+    rows = []
     with open('need-to-summarize.json', 'r+') as f:
         rows = json.load(f)
-        for row in rows:
-            code = row['code']
-            res = generate_humaneval_doc_and_signature(code)
-            row['summarized_code'] = res
-            print(res)
+
+    for row in rows:
+        code = row['code']
+        res = generate_humaneval_doc_and_signature(code)
+        row['summarized_code'] = res
+        print(res)
+
+    with open('need-to-summarize.json', 'w') as f:
         json.dump(rows, f, indent=2)
 
 
