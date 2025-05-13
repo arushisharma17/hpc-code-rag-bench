@@ -1,17 +1,17 @@
 #!/bin/bash
 
 models=(
-#  "Qwen/Qwen2.5-Coder-0.5B-Instruct"
+  "Qwen/Qwen2.5-Coder-0.5B-Instruct"
   "Qwen/Qwen2.5-Coder-1.5B-Instruct"
-#  "Qwen/Qwen2.5-Coder-3B-Instruct"
-#  "Qwen/Qwen2.5-Coder-7B-Instruct"
-#  "meta-llama/Llama-3.2-1B-Instruct"
+  "Qwen/Qwen2.5-Coder-3B-Instruct"
+  "Qwen/Qwen2.5-Coder-7B-Instruct"
+  "meta-llama/Llama-3.2-1B-Instruct"
 )
 retrieval_paths=(
-  "datasets/simple-openmp-summarized/stackoverflow/GIST-Embedding-v0.json"
-  "datasets/simple-openmp-summarized/stackoverflow/st-codesearch-distilroberta-base.json"
+  "datasets/simple-openmp/stackoverflow/GIST-Embedding-v0.json"
+  "datasets/simple-openmp/stackoverflow/st-codesearch-distilroberta-base.json"
 )
-corpus_path="datasets/simple-openmp-summarized/stackoverflow/corpus.jsonl"
+corpus_path="datasets/simple-openmp/stackoverflow/corpus.jsonl"
 
 for model in "${models[@]}"; do
     echo "Starting evaluation for model: $model"

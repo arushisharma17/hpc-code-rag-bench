@@ -89,6 +89,26 @@ An example where we use unit testing (program execution) can be seen in file `Pe
 
 You may run other LLMs, queries and corpus by building on top of that file. We have a complete scripts for 11 LLMs in another section below.
 
+Running unit test execution for SimpleOpenMP with both Github and Stackoverflow retrieval files:
+
+```shell
+python evals.py \
+    --dataset_type code_generation \
+    --data_file queries.jsonl \
+    --model_names "Qwen/Qwen2.5-Coder-1.5B-Instruct" \
+    --prompt_type simple-openmp \
+    --eval_type unit_test_execution \
+    --rag \
+    --k_documents 3 \
+    --retrieval_path "datasets/simple-openmp/github-latest/GIST-Embedding-v0.json" \
+    --retrieval_path_second "datasets/simple-openmp/stackoverflow/GIST-Embedding-v0.json" \
+    --corpus_path "datasets/simple-openmp/github-latest/corpus.jsonl" \
+    --corpus_path_second "datasets/simple-openmp/stackoverflow/corpus.jsonl" \
+    --load_in_4bit \
+    --dataset_name datasets/simple-openmp \
+    --test_mode
+```
+
 ### Sbatch Scripts
 
 Go to `sbatch-scripts` folder:

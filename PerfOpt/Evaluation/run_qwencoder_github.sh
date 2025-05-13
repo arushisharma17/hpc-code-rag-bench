@@ -1,14 +1,14 @@
 #!/bin/bash
 
 models=(
-#  "Qwen/Qwen2.5-Coder-0.5B-Instruct"
-#  "Qwen/Qwen2.5-Coder-1.5B-Instruct"
-#  "Qwen/Qwen2.5-Coder-3B-Instruct"
-#  "Qwen/Qwen2.5-Coder-7B-Instruct"
+  "Qwen/Qwen2.5-Coder-0.5B-Instruct"
+  "Qwen/Qwen2.5-Coder-1.5B-Instruct"
+  "Qwen/Qwen2.5-Coder-3B-Instruct"
+  "Qwen/Qwen2.5-Coder-7B-Instruct"
 )
 retrieval_paths=(
   "datasets/github/GIST-Embedding-v0.json"
-#  "datasets/github/st-codesearch-distilroberta-base.json"
+  "datasets/github/st-codesearch-distilroberta-base.json"
 )
 corpus_path="datasets/github/corpus.jsonl"
 

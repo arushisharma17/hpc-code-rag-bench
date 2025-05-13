@@ -2,3 +2,5 @@
 slum-*.out
 /PerfOpt/Evaluation/test-cases/tests/main.cpp
 /PerfOpt/Evaluation/test-cases/tests/main
+/PerfOpt/Evaluation/main
+/PerfOpt/Evaluation/main.cpp

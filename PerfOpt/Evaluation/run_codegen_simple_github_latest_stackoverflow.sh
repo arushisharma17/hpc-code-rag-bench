@@ -2,13 +2,13 @@
 
 models=(
   "Qwen/Qwen2.5-Coder-1.5B-Instruct"
-#  "meta-llama/Llama-3.2-1B-Instruct"
+  "meta-llama/Llama-3.2-1B-Instruct"
 )
 retrieval_paths=(
-  "datasets/simple-openmp-summarized/github-latest/GIST-Embedding-v0.json"
-  "datasets/simple-openmp-summarized/github-latest/st-codesearch-distilroberta-base.json"
+  "datasets/simple-openmp/github-latest/GIST-Embedding-v0.json"
+  "datasets/simple-openmp/github-latest/st-codesearch-distilroberta-base.json"
 )
-corpus_path="datasets/simple-openmp-summarized/github-latest/corpus.jsonl"
+corpus_path="datasets/simple-openmp/github-latest/corpus.jsonl"
 
 for model in "${models[@]}"; do
     for retrieval in "${retrieval_paths[@]}"; do
@@ -25,7 +25,8 @@ for model in "${models[@]}"; do
             --retrieval_path "$retrieval" \
             --corpus_path "$corpus_path" \
             --load_in_4bit \
-            --dataset_name datasets/simple-openmp
+            --dataset_name datasets/simple-openmp \
+            --test_mode
 
         echo "Finished evaluation for model: $model with retrieval path: $retrieval"
         echo "----------------------------------------"

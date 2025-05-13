@@ -484,30 +484,22 @@ def unit_test_execution_metric_evaluation(dataset, model_name, args):
     with open(file_path, "w") as f:
         json.dump(data, f, indent=2)
 
-    code = {
-        item["_id"].split("/")[-1]: item
-        for item in data['code_gens']
-    }
-
-    search_dir = Path('./test-cases/tests')
-    cpp_files = list(search_dir.rglob('*.cpp'))
     success = 0
     fail = 0
-    for file_path in cpp_files:
-        print(f"Opening: {file_path}")
-        with file_path.open('r', encoding='utf-8') as f:
+    for response in responses:
+        query_id = response["_id"].split("/")[-1]
+        p = f"./test-cases/tests/query-{query_id}.cpp"
+        print(f"Opening: {p}")
+        with open(p, 'r', encoding='utf-8') as f:
             content = f.read()
-            match = re.search(r'query-(\d+)\.cpp', f"{file_path}")
-            if match:
-                queryId = match.group(1)
-                content += "\n\n" + code.get(queryId)['code']
+            content += "\n\n" + response['code']
 
-        with open('tests/main.cpp', 'w', encoding='utf-8') as f:
+        with open('main.cpp', 'w', encoding='utf-8') as f:
             f.write(content)
 
         try:
             result = subprocess.run(
-                ["bash", "-c", "g++ -fopenmp tests/main.cpp -o tests/main && ./tests/main"],
+                ["bash", "-c", "g++ -fopenmp main.cpp -o main && ./main"],
                 timeout=10
             )
             exit_code = result.returncode
