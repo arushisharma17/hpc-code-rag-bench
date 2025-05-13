@@ -6,7 +6,6 @@ import argparse
 import csv
 import os
 import json
-import re
 from nltk.translate.bleu_score import sentence_bleu
 from ragas.llms import LangchainLLMWrapper
 from ragas.metrics import LLMContextRecall, LLMContextPrecisionWithReference, NoiseSensitivity, ResponseRelevancy, \
@@ -16,9 +15,14 @@ from ragas import evaluate
 from ragas import EvaluationDataset
 from tqdm import tqdm
 import datetime
+from codebleu import calc_codebleu
+import code_bert_score
+from pathlib import Path
+import subprocess
+import re
 
 
-def load_dataset_from_hub(dataset_type, data_file, test_mode):
+def load_dataset_from_hub(dataset_type, data_file, test_mode, dataset_name=None):
     """
     Load a dataset from the Hugging Face Hub based on the dataset type and file provided.
 
@@ -55,8 +59,9 @@ def load_dataset_from_hub(dataset_type, data_file, test_mode):
         dataset = load_dataset("sharmaarushi17/HPCPerfOpt-Open-ended", data_files=data_file)
         # dataset = load_dataset(data_file)
     elif dataset_type == "code_generation":
-        data_files = {"test": data_file}
-        dataset = load_dataset("datasets/polybench", data_files=data_files)
+        if dataset_name is None:
+            raise ValueError(f"please provide a valid dataset name. You may pass a Hugging Face repository or a folder in datasets directory")
+        dataset = load_dataset(dataset_name, data_files={"test": data_file})
     # Raise an error if an invalid dataset_type is provided.
     else:
         raise ValueError(f"Invalid dataset_type: {dataset_type}")
@@ -100,7 +105,8 @@ def load_model_return_response(model_name, prompt, task='openmp_question_answeri
 
 
 def create_LLM_prompt_from_example(example, dataset_type, prompt_type, rag, k_documents=3,
-                                   retrieval_path='../results/retrieval.json', corpus_path='../results/corpus.jsonl'):
+                                   retrieval_path='../results/retrieval.json', corpus_path='../results/corpus.jsonl',
+                                   retrieval_path_second=None, corpus_path_second=None):
     '''
     Generate a language model prompt for a given example, based on instructions stored in EVALUATION_PROMPTS dictionary stored in prompts.py
 
@@ -133,13 +139,45 @@ def create_LLM_prompt_from_example(example, dataset_type, prompt_type, rag, k_do
             task_id = str(task_id) + "_doc"
 
         retrieval = open(retrieval_path, "r")
+        retrieval_second = None
+        if retrieval_path_second is not None:
+            retrieval_second = open(retrieval_path_second, "r")
+
         corpus = open(corpus_path, "r")
+        corpus_second = None
+        if corpus_path_second is not None:
+            corpus_second = open(corpus_path_second, "r")
         # Additional information to tell the LM that context is being provided for the task
         rag_ins = " \n Below are additional contexts followed by the task, contexts may or may not help in answering or completing the task. \n"
 
         try:
             ret = [json.loads(line) for line in retrieval]
+
+            if retrieval_second is not None:
+                k_documents = 2*k_documents
+                for line in retrieval_second:
+                    d = json.loads(line)
+                    id = None
+                    for key in d:
+                        id = key
+
+                    for x in ret:
+                        if id in x:
+                            x[id].update(d[id])
+
+
             cor = [json.loads(line) for line in corpus]
+            if corpus_second is not None:
+                for line in corpus_second:
+                    d = json.loads(line)
+                    id = None
+                    for key in d:
+                        id = key
+
+                    for x in cor:
+                        if id in x:
+                            x[id].update(d[id])
+
             # finds the relevant documents for the task and formats it into context
             for line in ret:
                 if task_id in line:
@@ -147,7 +185,6 @@ def create_LLM_prompt_from_example(example, dataset_type, prompt_type, rag, k_do
                     sorted_docs = sorted(docs.items(), key=lambda x: x[1],
                                          reverse=True)  # sorts the documents based on their retrieval score
                     top_k = sorted_docs[:k_documents]  # leave only the top-k documents retrieved
-
                     stentries = dict(top_k)
                     keys = list(stentries.keys())
 
@@ -295,9 +332,15 @@ def extract_c_code(text):
     return [match.strip() for match in matches]
 
 
-def remove_function(c_code, function_name):
-    pattern = re.compile(r'\b(?:int|void)\s+' + re.escape(function_name) + r'\s*\(', re.MULTILINE)
-    match = pattern.search(c_code)
+def extract_code(text):
+    pattern = re.compile(r'```(.*?)```', re.DOTALL)
+    matches = pattern.findall(text)
+    return [match.strip() for match in matches]
+
+def remove_pp(text):
+    if text.startswith("pp") or text.startswith("++"):
+        return text[2:]
+    return text
 
     if not match:
         return c_code  # Function not found, return original code
@@ -326,8 +369,9 @@ def remove_function(c_code, function_name):
     return c_code  # Return original if unmatched braces
 
 
-def codebertscore_evaluation(dataset, model_name, args):
+def static_code_metric_evaluation(dataset, model_name, args):
     responses = []
+    predictions = []
     data = {
         'model_name': model_name,
         'retrieval_path': args.retrieval_path,
@@ -339,7 +383,8 @@ def codebertscore_evaluation(dataset, model_name, args):
     for question in tqdm(dataset['test']):
         prompt = create_LLM_prompt_from_example(question, args.dataset_type, args.prompt_type, args.rag,
                                                 k_documents=args.k_documents, retrieval_path=args.retrieval_path,
-                                                corpus_path=args.corpus_path)
+                                                corpus_path=args.corpus_path, retrieval_path_second=args.retrieval_path_second,
+                                                corpus_path_second=args.corpus_path_second)
         print(f"Prompt {idx}: {prompt['prompt']}")
         print()
         model_args = {
@@ -347,13 +392,14 @@ def codebertscore_evaluation(dataset, model_name, args):
         }
         response = load_model_return_response(model_name=model_name, prompt=prompt['prompt'], task='code_generation',
                                               **model_args)
-        print(f"response: {response}")
-
         c_code = next(iter(extract_c_code(response)), '')
-        c_code = remove_function(c_code, 'main')
+        if c_code == '':
+            c_code = next(iter(extract_code(response)), '')
+        c_code = remove_pp(c_code)
 
-        print(f"response after remove function: {c_code}")
-        responses.append({'_id': question['_id'], 'code': c_code, 'response': response})
+        print(f"response: {c_code}")
+        responses.append({'_id': question['_id'], 'prompt': prompt['prompt'], 'code': c_code, 'response': response})
+        predictions.append(c_code)
         idx += 1
         print(f"{'-' * 80}")
 
@@ -367,7 +413,123 @@ def codebertscore_evaluation(dataset, model_name, args):
     with open(file_path, "w") as f:
         json.dump(data, f, indent=2)
 
-    return '', ''
+    refs = []
+    # assumption is the ground turh file is in the same dataset folder
+    with open(f"{args.dataset_name}/ground-truth.json", "r") as file:
+        corpus = json.load(file)
+        for row in corpus:
+            refs.append(row['correct_answer'])
+
+    if args.test_mode:
+        refs = refs[:2]
+
+    codebleu_result = calc_codebleu(references=refs, predictions=predictions, lang="c", weights=(0.10, 0.10, 0.40, 0.40), tokenizer=None)
+    data['codebleu_result'] = codebleu_result
+    codebert_result = code_bert_score.score(refs=refs, cands=predictions, lang='c')
+    tensors = [codebert_result[0], codebert_result[1], codebert_result[2], codebert_result[3]]
+    means = [tensor.mean() for tensor in tensors]
+    data['codebert_result'] = {
+        'P': means[0].item(),
+        'R': means[1].item(),
+        'F': means[2].item(),
+        'F3': means[3].item()
+    }
+    # overwrite output file with scores
+    with open(file_path, "w") as f:
+        json.dump(data, f, indent=2)
+    print(f'result saved to {file_path}')
+
+
+def unit_test_execution_metric_evaluation(dataset, model_name, args):
+    responses = []
+    predictions = []
+    data = {
+        'model_name': model_name,
+        'retrieval_path': args.retrieval_path,
+        'corpus_path': args.corpus_path,
+        'k_documents': args.k_documents,
+        'rag': args.rag
+    }
+    idx = 1
+    for question in tqdm(dataset['test']):
+        prompt = create_LLM_prompt_from_example(question, args.dataset_type, args.prompt_type, args.rag,
+                                                k_documents=args.k_documents, retrieval_path=args.retrieval_path,
+                                                corpus_path=args.corpus_path, retrieval_path_second=args.retrieval_path_second,
+                                                corpus_path_second=args.corpus_path_second)
+        print(f"Prompt {idx}: {prompt['prompt']}")
+        print()
+        model_args = {
+            'load_in_4bit': args.load_in_4bit
+        }
+        response = load_model_return_response(model_name=model_name, prompt=prompt['prompt'], task='code_generation',
+                                              **model_args)
+        c_code = next(iter(extract_c_code(response)), '')
+        if c_code == '':
+            c_code = next(iter(extract_code(response)), '')
+        c_code = remove_pp(c_code)
+
+        print(f"response: {c_code}")
+        responses.append({'_id': question['_id'], 'prompt': prompt['prompt'], 'code': c_code, 'response': response})
+        predictions.append(c_code)
+        idx += 1
+        print(f"{'-' * 80}")
+
+    data['code_gens'] = responses
+    current_timestamp = datetime.datetime.now()
+    unix_timestamp_ms = int(current_timestamp.timestamp() * 1000)
+    model_name_simple = model_name.replace('/', '')
+    dir_path = 'codegen-output'
+    os.makedirs(dir_path, exist_ok=True)
+    file_path = os.path.join(dir_path, f"{model_name_simple}-{unix_timestamp_ms}.json")
+    with open(file_path, "w") as f:
+        json.dump(data, f, indent=2)
+
+    code = {
+        item["_id"].split("/")[-1]: item
+        for item in data['code_gens']
+    }
+
+    search_dir = Path('./test-cases/tests')
+    cpp_files = list(search_dir.rglob('*.cpp'))
+    success = 0
+    fail = 0
+    for file_path in cpp_files:
+        print(f"Opening: {file_path}")
+        with file_path.open('r', encoding='utf-8') as f:
+            content = f.read()
+            match = re.search(r'query-(\d+)\.cpp', f"{file_path}")
+            if match:
+                queryId = match.group(1)
+                content += "\n\n" + code.get(queryId)['code']
+
+        with open('tests/main.cpp', 'w', encoding='utf-8') as f:
+            f.write(content)
+
+        try:
+            result = subprocess.run(
+                ["bash", "-c", "g++ -fopenmp tests/main.cpp -o tests/main && ./tests/main"],
+                timeout=10
+            )
+            exit_code = result.returncode
+            print(f"exit code: {exit_code}")
+            print("\n\n")
+            if exit_code == 0:
+                success += 1
+            else:
+                fail += 1
+        except subprocess.TimeoutExpired:
+            print("Process timed out.")
+            print("\n\n")
+            fail += 1
+    data['result'] = {
+        'success': success,
+        'fail': fail
+    }
+
+    with open(file_path, "w") as f:
+        json.dump(data, f, indent=2)
+
+    print(f'result saved to {file_path}')
 
 
 def exact_match_evaluation(mcqa_dataset, model_name, args):
@@ -605,7 +767,7 @@ def ragas_evaluation(dataset, model_name, args):
         Faithfulness()
     ], llm=evaluator_llm),
 
-    print('context_recall result', result)
+    print('RAGS result', result)
 
     return result
 
@@ -698,7 +860,7 @@ def main(args):
     print(f"Evaluating model(s): {', '.join(args.model_names)}")
     print(f"Top K Documents: {args.k_documents}")
 
-    dataset = load_dataset_from_hub(args.dataset_type, args.data_file, args.test_mode)
+    dataset = load_dataset_from_hub(args.dataset_type, args.data_file, args.test_mode, args.dataset_name)
     split = 'train' if 'train' in dataset else 'test'
     print(f"Loaded dataset with {len(dataset[split])} examples for evaluation.", dataset)
 
@@ -719,9 +881,12 @@ def main(args):
             store_eval_results_in_csv(args.dataset_type, args.data_file, args.prompt_type, args.eval_type, model_name,
                                       results, accuracy, args.rag)
             print(f"Model: {model_name} - Accuracy: {accuracy}")
-        elif args.eval_type == "codebertscore":
-            codebertscore_evaluation(dataset, model_name, args)
-            print('done generating for codebertscore')
+        elif args.eval_type == "static_code_metric":
+            static_code_metric_evaluation(dataset, model_name, args)
+            print('done generating for static_code_metric')
+        elif args.eval_type == 'unit_test_execution':
+            unit_test_execution_metric_evaluation(dataset, model_name, args)
+            print('done generating for unit_test_execution_metric')
         elif args.eval_type == "llm-as-judge":
             accuracy, results = llm_as_a_judge_evaluation(dataset, model_name, args)
             store_eval_results_in_csv(args.dataset_type, args.data_file, args.prompt_type, args.eval_type, model_name,
@@ -729,9 +894,7 @@ def main(args):
             print(f"Model: {model_name} - Accuracy: {accuracy}")
         if args.eval_type == "ragas":
             ragas_evaluation(dataset, model_name, args)
-            print('ragas DONE')
-        else:
-            print("error")
+            print('done RAGAS')
 
 
 if __name__ == "__main__":
@@ -767,20 +930,25 @@ if __name__ == "__main__":
     parser.add_argument('--prompt_type',
                         type=str,
                         default='none',  # Set the default value to 'none'
-                        choices=['standard', 'cot', 'text', 'code', 'rag', 'none'],
+                        choices=['standard', 'cot', 'text', 'code', 'rag', 'none', 'simple-openmp'],
                         help='The type of prompt to be used for the LLM. "none" will use no additional prompt information.')
 
     parser.add_argument('--eval_type',
                         type=str,
                         default='none',  # Set the default value to 'none'
-                        choices=['exact_match', 'semantic_similarity', 'bleu_score', 'codebertscore', 'llm_as_a_judge',
-                                 'ragas'],
+                        choices=['exact_match', 'semantic_similarity', 'bleu_score', 'static_code_metric', 'llm_as_a_judge',
+                                 'ragas', 'unit_test_execution'],
                         help='The type of evaluation to be performed. "none" will use no additional prompt information.')
     parser.add_argument('--k_documents', type=int, default=3)
     parser.add_argument('--load_in_4bit', action='store_true', help='Run in quantized 4 bit mode')
     parser.add_argument('--retrieval_path', type=str, default='',
                         help='stores the retrieval embeddings scores for RAG context')
+    parser.add_argument('--retrieval_path_second', type=str, default=None,
+                        help='stores the retrieval embeddings scores for RAG context (second retrieval doc)')
     parser.add_argument('--corpus_path', type=str, default='', help='stores the corpus for RAG context')
+    parser.add_argument('--corpus_path_second', type=str, default=None, help='stores the corpus for RAG context (second doc)')
+    parser.add_argument('--dataset_name', type=str, default=None, help='Path of the code generation query dataset.',
+                        choices=['datasets/polybench', 'datasets/simple-openmp'])
 
     args = parser.parse_args()
     main(args)
