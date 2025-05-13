@@ -47,7 +47,8 @@ EVALUATION_PROMPTS = {
     # OpenMP code generation
     "CODE_GENERATION": {
         "index": 3,
-        "standard": "You are an expert in OpenMP performance optimization. Given a function signature, generate a complete and efficient C program that correctly implements the function using OpenMP. Ensure the implementation follows best practices for performance, scalability, and correctness."
+        "standard": "You are an expert in OpenMP performance optimization. Given a function signature, generate a complete and efficient C program that correctly implements the function using OpenMP. Ensure the implementation follows best practices for performance, scalability, and correctness.",
+        "simple-openmp": "You are an expert in OpenMP performance optimization. Given a function signature, generate a complete and efficient C program that correctly implements the function using OpenMP. You do not need to implement the main function. Ensure the implementation follows best practices for performance, scalability, and correctness."
     }
 }
 
