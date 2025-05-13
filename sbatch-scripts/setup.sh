@@ -5,7 +5,10 @@
 # job standard output will go to the file slurm-%j.out (where %j is the job ID)
 
 # e.g. to run:
-# sbatch --partition="instruction" --account="s2025.coms.599.3" --mail-user="azhar@iastate.edu" setup.sh
+# sbatch --export=PROJECT_DIR="/work/classtmp/azhar/projects/hpc-code-rag-bench",MICROMAMBA_ROOT_PATH="/work/classtmp/azhar/micromamba",MICROMAMBA_ENV_NAME="hpccoderag",HF_HOME_PATH="/work/classtmp/azhar/hf" \
+  #--partition="instruction" \
+  #--account="s2025.coms.599.3" \
+  #--mail-user="azhar@iastate.edu" setup.sh
 
 #SBATCH --time=2:00:00   # walltime limit (HH:MM:SS)
 #SBATCH --nodes=1   # number of nodes
