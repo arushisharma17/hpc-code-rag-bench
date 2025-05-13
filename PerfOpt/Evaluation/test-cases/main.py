@@ -13,7 +13,7 @@ if __name__ == "__main__":
     success = 0
     fail = 0
 
-    with open('../codegen-output/QwenQwen2.5-Coder-1.5B-Instruct-1746427691992.json', 'r') as f:
+    with open('../codegen-output/QwenQwen2.5-Coder-1.5B-Instruct-1747088958074.json', 'r') as f:
         generated_code = json.load(f)
         code = {
             item["_id"].split("/")[-1]: item
@@ -29,11 +29,14 @@ if __name__ == "__main__":
                 queryId = match.group(1)
                 content += "\n\n" + code.get(queryId)['code']
 
-        with open('tests/main.cpp', 'w') as f:
+        with open('tests/main.cpp', 'w', encoding='utf-8') as f:
             f.write(content)
 
         try:
-            result = subprocess.run("g++ -fopenmp tests/main.cpp -o tests/main && ./tests/main", shell=True,   timeout=10)
+            result = subprocess.run(
+    ["bash", "-c", "g++ -fopenmp tests/main.cpp -o tests/main && ./tests/main"],
+    timeout=10
+)
             exit_code = result.returncode
             print(f"exit code: {exit_code}")
             print("\n\n")
