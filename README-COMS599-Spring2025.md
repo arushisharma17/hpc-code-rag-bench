@@ -2,8 +2,8 @@
 
 #### Scraping the documents from Stackoverflow and Github
 
-![scrape-stackoverflow-1](/home/adis/projects/courses/spring2025/coms-599/hpc-code-rag-bench/figures/scrape-stackoverflow-1.png "scrape-stackoverflow-1")
-![scrape-stackoverflow-2](/home/adis/projects/courses/spring2025/coms-599/hpc-code-rag-bench/figures/scrape-stackoverflow-2.png "scrape-stackoverflow-2")
+![scrape-stackoverflow-1](figures/scrape-stackoverflow-1.png "scrape-stackoverflow-1")
+![scrape-stackoverflow-2](figures/scrape-stackoverflow-2.png "scrape-stackoverflow-2")
 
 Raw Stackoverflow posts are stored in `web-scraping/so-posts` folder.
 
@@ -12,12 +12,12 @@ Github corpus file for BEIR is in `retrieval/create/github` folder.
 
 #### Generating embeddings and similarity scores using BEIR
 
-![embedding-pipeline](/home/adis/projects/courses/spring2025/coms-599/hpc-code-rag-bench/figures/embedding-pipeline.png "embedding-pipeline")
+![embedding-pipeline](figures/embedding-pipeline.png "embedding-pipeline")
 
 
 #### Inference
 
-![inference-pipeline](/home/adis/projects/courses/spring2025/coms-599/hpc-code-rag-bench/figures/inference-pipeline.png "inference-pipeline")
+![inference-pipeline](figures/inference-pipeline.png "inference-pipeline")
 
 
 ## Running the program
