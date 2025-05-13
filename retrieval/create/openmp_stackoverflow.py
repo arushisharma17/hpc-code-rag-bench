@@ -1,29 +1,5 @@
-import csv
 import json
 import jsonlines
-
-# Input and output file paths
-csv_file = "text_code_dataset.csv"
-json_file = "corpus.jsonl"
-
-
-def csv_to_json(csv_file, json_file):
-    data = []
-
-    with open(csv_file, newline='', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-
-        for index, row in enumerate(reader):
-            entry = {
-                "_id": str(index + 1),
-                "title": row["Text"],
-                "text": row["Code"],
-                "metadata": {}
-            }
-            data.append(entry)
-
-    with jsonlines.open(json_file, mode = "w") as writer:
-        writer.write_all(data)
 
 
 def to_corpus(input_file, output_file):

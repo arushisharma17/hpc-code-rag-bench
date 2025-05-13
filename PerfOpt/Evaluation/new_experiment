@@ -1,0 +1,29 @@
+python evals.py \
+    --dataset_type code_generation \
+    --data_file queries.jsonl \
+    --model_names "Qwen/Qwen2.5-Coder-1.5B-Instruct" \
+    --prompt_type simple-openmp \
+    --eval_type codebertscore \
+    --rag \
+    --k_documents 2 \
+    --retrieval_path "datasets/simple-openmp-summarized/github-latest/GIST-Embedding-v0.json" \
+    --retrieval_path_second "datasets/simple-openmp-summarized/stackoverflow/GIST-Embedding-v0.json" \
+    --corpus_path "datasets/simple-openmp-summarized/github-latest/corpus.jsonl" \
+    --corpus_path_second "datasets/simple-openmp-summarized/stackoverflow/corpus.jsonl" \
+    --load_in_4bit
+
+
+python evals.py \
+    --dataset_type code_generation \
+    --data_file queries.jsonl \
+    --model_names "Qwen/Qwen2.5-Coder-1.5B-Instruct" \
+    --prompt_type simple-openmp \
+    --eval_type codebertscore \
+    --rag \
+    --k_documents 2 \
+    --retrieval_path "datasets/simple-openmp-summarized/github-latest/st-codesearch-distilroberta-base.json" \
+    --retrieval_path_second "datasets/simple-openmp-summarized/stackoverflow/st-codesearch-distilroberta-base.json" \
+    --corpus_path "datasets/simple-openmp-summarized/github-latest/corpus.jsonl" \
+    --corpus_path_second "datasets/simple-openmp-summarized/stackoverflow/corpus.jsonl" \
+    --load_in_4bit
+
