@@ -105,8 +105,7 @@ python evals.py \
     --corpus_path "datasets/simple-openmp/github-latest/corpus.jsonl" \
     --corpus_path_second "datasets/simple-openmp/stackoverflow/corpus.jsonl" \
     --load_in_4bit \
-    --dataset_name datasets/simple-openmp \
-    --test_mode
+    --dataset_name datasets/simple-openmp
 ```
 
 ### Sbatch Scripts
